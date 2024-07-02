@@ -3,9 +3,9 @@ import type { ApiResponse, TokenPayload, TokenResponse } from "~/types";
 
 export const useAuthStore = defineStore("auth", () => {
   const token = ref<TokenResponse | null>(null);
-  const tokenPayload = ref<TokenPayload | null>(null);
+  const payload = ref<TokenPayload | null>(null);
   const isAuthenticated = computed(
-    () => token.value !== null && tokenPayload.value !== null
+    () => token.value !== null && payload.value !== null
   );
 
   const setCookie = (token: TokenResponse) => {
@@ -14,7 +14,7 @@ export const useAuthStore = defineStore("auth", () => {
     const offset = 7 * 60 * 60 * 1000;
     // Adjust the cookieExpire to GMT+7
     cookieExpire = new Date(cookieExpire.getTime() + offset);
-    const cookie = useCookie("auth", { expires: cookieExpire });
+    const cookie = useCookie("auth");
     cookie.value = JSON.stringify(token);
   };
 
@@ -22,20 +22,18 @@ export const useAuthStore = defineStore("auth", () => {
     const router = useRouter();
     if (res.code === 200 && res.result) {
       token.value = res.result;
-      tokenPayload.value = JSON.parse(
-        atob(token.value.accessToken.split(".")[1])
-      );
+      payload.value = JSON.parse(atob(token.value.accessToken.split(".")[1]));
       setCookie(token.value);
+      if (payload.value) {
+        const timeout = (payload.value.exp - Date.now() / 1000) * 1000 - 10000;
+        const refresh = token.value.refreshToken;
 
-      const timeout = new Date(token.value.accessExpire).getTime() - 60000;
-      console.log("Token will expire in", timeout);
-      const refresh = token.value.refreshToken;
+        setTimeout(async () => {
+          await refreshAuth(refresh);
+        }, timeout);
 
-      setTimeout(async () => {
-        await refreshAuth(refresh);
-      }, timeout);
-
-      router.push("/");
+        router.push("/");
+      }
     }
   };
 
@@ -44,16 +42,17 @@ export const useAuthStore = defineStore("auth", () => {
     if (cookie.value) {
       console.log("Loading auth");
       token.value = cookie.value;
-      tokenPayload.value = JSON.parse(
-        atob(token.value.accessToken.split(".")[1])
-      );
-      if (token.value.accessExpire - Math.floor(Date.now()) < 60) {
-        console.log("Token will expire soon");
-        refreshAuth(token.value.refreshToken);
-      }
-      if (token.value.accessExpire - Math.floor(Date.now()) < 0) {
-        console.log("Token expired");
-        logout();
+      payload.value = JSON.parse(atob(token.value.accessToken.split(".")[1]));
+      if (payload.value) {
+        const timout = (payload.value.exp - Date.now() / 1000) * 1000 - 10000;
+        if (timout < 60) {
+          console.log("Refreshing auth");
+          refreshAuth(token.value.refreshToken);
+        }
+        if (timout < 0) {
+          console.log("Token expired");
+          logout();
+        }
       }
     } else {
       logout();
@@ -82,10 +81,10 @@ export const useAuthStore = defineStore("auth", () => {
 
   const logout = () => {
     token.value = null;
-    tokenPayload.value = null;
+    payload.value = null;
     const cookie = useCookie("auth");
     cookie.value = null;
   };
 
-  return { loadAuth, transfer, logout, isAuthenticated, token, tokenPayload };
+  return { loadAuth, transfer, logout, isAuthenticated, token, payload };
 });
