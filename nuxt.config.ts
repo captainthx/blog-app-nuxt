@@ -14,7 +14,14 @@ export default defineNuxtConfig({
         },
       },
     ],
+    "dayjs-nuxt",
   ],
+  dayjs: {
+    locales: ["en", "th"],
+    plugins: ["relativeTime", "utc", "timezone"],
+    defaultLocale: "en",
+    defaultTimezone: "Asia/Bangkok",
+  },
   devtools: {
     enabled: true,
     timeline: {
