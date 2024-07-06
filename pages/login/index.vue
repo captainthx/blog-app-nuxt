@@ -1,7 +1,18 @@
 <script setup lang="ts">
 import type { FormError } from "#ui/types";
+import { AxiosError } from "axios";
+import { login } from "~/service/Auth";
 import { useAuthStore } from "~/store/authStore";
-import type { ApiResponse, TokenResponse } from "~/types";
+
+useHead({
+  title: "Login",
+  meta: [
+    {
+      name: "description",
+      content: "Login page",
+    },
+  ],
+});
 
 const authStore = useAuthStore();
 const body = reactive({
@@ -24,30 +35,26 @@ const validate = (body: any): FormError[] => {
 const handleLogin = async () => {
   state.submit = true;
   const toast = useToast();
-  const { data, error } = await myFetch<ApiResponse<TokenResponse>>(
-    "/v1/auth/login",
-    {
-      method: "POST",
-      body: body,
-    }
-  );
-  if (data.value) {
-    if (data.value.code === 200) {
+  try {
+    const res = await login(body);
+    if (res.status === 200 && res.data.code === 200) {
       state.submit = false;
-      authStore.transfer(data.value);
+      authStore.transfer(res);
       toast.add({
         title: "Login success",
         description: "You have successfully logged in",
         timeout: 3000,
       });
     }
-  }
-  if (error.value) {
-    if (error.value.data.code != 200) {
+  } catch (error) {
+    if (typeof error === "string") {
+    } else if (error instanceof AxiosError) {
+      const axiosError = error as AxiosError;
+      const responseData = axiosError.response?.data as { message: string };
       state.submit = false;
       toast.add({
         title: "Login failed",
-        description: error.value.data.message,
+        description: responseData.message,
         timeout: 3000,
         color: "red",
       });

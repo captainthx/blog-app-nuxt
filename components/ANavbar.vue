@@ -37,7 +37,7 @@ const items = [
   ],
   [
     {
-      label: "Delete",
+      label: "Logout",
       icon: "i-heroicons-arrow-right-start-on-rectangle-solid",
       click: () => authStore.logout(),
     },

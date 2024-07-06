@@ -1,4 +1,7 @@
+import type { AxiosResponse } from "axios";
 import { defineStore } from "pinia";
+import { refresh } from "~/service/auth";
+import client from "~/service/request";
 import type { ApiResponse, TokenPayload, TokenResponse } from "~/types";
 
 export const useAuthStore = defineStore("auth", () => {
@@ -8,6 +11,9 @@ export const useAuthStore = defineStore("auth", () => {
     () => token.value !== null && payload.value !== null
   );
 
+  const isAuthLoaded = ref<boolean>(false);
+
+  const router = useRouter();
   const setCookie = (token: TokenResponse) => {
     let cookieExpire = new Date(token.accessExpire);
     // Convert to milliseconds: 7 hours * 60 minutes * 60 seconds * 1000 milliseconds
@@ -18,18 +24,18 @@ export const useAuthStore = defineStore("auth", () => {
     cookie.value = JSON.stringify(token);
   };
 
-  const transfer = (res: ApiResponse<TokenResponse>) => {
-    const router = useRouter();
-    if (res.code === 200 && res.result) {
-      token.value = res.result;
+  const transfer = (res: AxiosResponse<ApiResponse<TokenResponse>>) => {
+    if (res.status === 200 && res.data.code === 200) {
+      token.value = res.data.result;
       payload.value = JSON.parse(atob(token.value.accessToken.split(".")[1]));
       setCookie(token.value);
       if (payload.value) {
         const timeout = (payload.value.exp - Date.now() / 1000) * 1000 - 10000;
         const refresh = token.value.refreshToken;
 
-        setTimeout(async () => {
-          await refreshAuth(refresh);
+        setTimeout(() => {
+          console.log("settime out Refreshing auth");
+          refreshAuth(refresh);
         }, timeout);
 
         router.push("/");
@@ -39,16 +45,25 @@ export const useAuthStore = defineStore("auth", () => {
 
   const loadAuth = () => {
     const cookie = useCookie<TokenResponse | null>("auth");
+    if (isAuthLoaded.value) return;
     if (cookie.value) {
       console.log("Loading auth");
       token.value = cookie.value;
       payload.value = JSON.parse(atob(token.value.accessToken.split(".")[1]));
       if (payload.value) {
         const timout = (payload.value.exp - Date.now() / 1000) * 1000 - 10000;
-        if (timout < 60) {
-          console.log("Refreshing auth");
-          refreshAuth(token.value.refreshToken);
-        }
+
+        client.interceptors.request.use(
+          (config) => {
+            if (token.value) {
+              config.headers.Authorization = `Bearer ${token.value.accessToken}`;
+            }
+            return config;
+          },
+          (error) => {
+            return Promise.reject(error);
+          }
+        );
         if (timout < 0) {
           console.log("Token expired");
           logout();
@@ -57,24 +72,21 @@ export const useAuthStore = defineStore("auth", () => {
     } else {
       logout();
     }
+    isAuthLoaded.value = true;
   };
 
   const refreshAuth = async (token: string) => {
-    const { data, error } = await myFetch<ApiResponse<TokenResponse>>(
-      "/v1/auth/refresh",
-      {
-        method: "POST",
-        body: {
-          token: token,
-        },
+    try {
+      const res = await refresh({ token });
+      if (res.data.code === 200) {
+        if (res.data.result) {
+          transfer(res);
+        }
       }
-    );
-    if (data) {
-      if (data.value?.code === 200) {
-        transfer(data.value);
+      if (res.status !== 200) {
+        console.error(res.data.message);
       }
-    }
-    if (error) {
+    } catch (error) {
       console.error(error);
     }
   };
@@ -84,7 +96,16 @@ export const useAuthStore = defineStore("auth", () => {
     payload.value = null;
     const cookie = useCookie("auth");
     cookie.value = null;
+    router.push("/login");
   };
 
-  return { loadAuth, transfer, logout, isAuthenticated, token, payload };
+  return {
+    loadAuth,
+    transfer,
+    logout,
+    isAuthenticated,
+    isAuthLoaded,
+    token,
+    payload,
+  };
 });

@@ -1,9 +1,11 @@
 import type { AxiosResponse } from "axios";
+import type { DefaultPagination } from "./enum";
 
 export interface ApiResponse<T> {
   code: number;
   message: string;
   result: T;
+  pagination: PaginationResponse;
 }
 
 export type ServerResponse<T> = Promise<AxiosResponse<ApiResponse<T>>>;
@@ -22,11 +24,13 @@ export interface PaginationResponse {
   pages: number;
 }
 
-export interface AuthRequest {
+export interface LoginRequest {
   username: string;
   password: string;
 }
-
+export interface RefreshTokenRequest {
+  token: string;
+}
 export interface TokenPayload {
   sub: string;
   auth: number;
@@ -49,4 +53,40 @@ export interface AccountResponse {
   mobile: string;
   cdt: number;
   udt: number;
+}
+export interface PostResponse {
+  id: number;
+  cdt: number;
+  title: string;
+  content: string;
+  status: string;
+  likeCount: number;
+  comments: CommentResponse[];
+  tags: string[];
+  postLikes: AccountResponse[];
+}
+
+export interface AccountResponse {
+  id: number;
+  username: string;
+  name: string;
+  mobile: string;
+  avatar: string;
+}
+
+export interface CommentResponse {
+  id: number;
+  account: AccountResponse;
+  comment: string;
+  cdt: number;
+}
+
+export interface Pagination {
+  page?: number;
+  size?: number;
+}
+export interface PostRequest extends Pagination {
+  title?: string;
+  content?: string;
+  tags?: string[];
 }
