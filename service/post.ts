@@ -1,9 +1,4 @@
-import type {
-  PostRequest,
-  PostResponse,
-  ServerListResponse,
-  ServerResponse,
-} from "~/types";
+import type { PostRequest, PostResponse, ServerResponse } from "~/types";
 import client from "./request";
 
 const getpostList = (params: PostRequest): ServerResponse<PostResponse[]> =>

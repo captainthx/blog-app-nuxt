@@ -11,8 +11,6 @@ export const useAuthStore = defineStore("auth", () => {
     () => token.value !== null && payload.value !== null
   );
 
-  const isAuthLoaded = ref<boolean>(false);
-
   const router = useRouter();
   const setCookie = (token: TokenResponse) => {
     let cookieExpire = new Date(token.accessExpire);
@@ -45,7 +43,6 @@ export const useAuthStore = defineStore("auth", () => {
 
   const loadAuth = () => {
     const cookie = useCookie<TokenResponse | null>("auth");
-    if (isAuthLoaded.value) return;
     if (cookie.value) {
       console.log("Loading auth");
       token.value = cookie.value;
@@ -72,7 +69,6 @@ export const useAuthStore = defineStore("auth", () => {
     } else {
       logout();
     }
-    isAuthLoaded.value = true;
   };
 
   const refreshAuth = async (token: string) => {
@@ -104,7 +100,6 @@ export const useAuthStore = defineStore("auth", () => {
     transfer,
     logout,
     isAuthenticated,
-    isAuthLoaded,
     token,
     payload,
   };

@@ -26,6 +26,7 @@ const loadData = async () => {
     if (res.status === 200 && res.data.code === 200) {
       postList.value = res.data.result;
       pagination.value = res.data.pagination;
+      console.log("pagination", pagination.value);
     }
   } catch (error) {
     if (typeof error === "string") {
