@@ -32,21 +32,48 @@ const loadData = async () => {
   }
 };
 
-// const isLiked = computed(() => {
-//   if (blog.value?.postLikes === null) {
-//     return false;
-//   }
-//   return blog.value?.postLikes.find(
-//     (like) => like.id === authStore.userProfile?.id
-//   );
-// });
-// console.log("postLike", blog.value?.postLikes);
+const isLiked = computed(() => {
+  if (!blog.value || !blog.value.postLikes || !authStore.userProfile) {
+    return false;
+  }
+  const result = blog.value.postLikes.some((like) => {
+    const likeAccountId = like.account?.id;
+    console.log(
+      `Comparing like.account.id: ${likeAccountId} (${typeof likeAccountId}) with userProfile.id: ${
+        authStore.userProfile?.id
+      } (${typeof authStore.userProfile?.id})`
+    );
+    return likeAccountId === authStore.userProfile?.id;
+  });
+
+  return result;
+});
+
+const handlelike = async () => {
+  console.log("isLiked", isLiked.value);
+  if (isLiked.value) {
+    toast.add({
+      title: "You already liked this post",
+      description: "You can't like a post more than once",
+      color: "red",
+      timeout: 3000,
+    });
+  }
+  // Call the like API
+  toast.add({
+    title: "You liked this post",
+    description: "You can't like a post more than once",
+    color: "green",
+    timeout: 3000,
+  });
+};
+
 await loadData();
 </script>
 
 <template>
   <div class="flex flex-col gap-4 w-full" v-if="blog">
-    {{ blog.postLikes }}
+    {{ isLiked }} {{ authStore.userProfile?.id }}
     <div>
       <UCard>
         <template #header>
@@ -58,9 +85,10 @@ await loadData();
         <template #footer>
           <div class="flex justify-between">
             <UIcon
-              class="text-red-500"
+              :class="isLiked ? 'text-red-500' : 'text-gray-500'"
               variant="ghost"
-              name="i-heroicons-heart"
+              :name="isLiked ? 'i-heroicons-heart-solid' : 'i-heroicons-heart'"
+              @click="handlelike"
             />
             <UButton
               color="white"
