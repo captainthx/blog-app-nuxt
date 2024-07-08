@@ -1,8 +1,14 @@
-import type { AxiosResponse } from "axios";
+import { AxiosError, type AxiosResponse } from "axios";
 import { defineStore } from "pinia";
+import { profile } from "~/service/account";
 import { refresh } from "~/service/auth";
 import client from "~/service/request";
-import type { ApiResponse, TokenPayload, TokenResponse } from "~/types";
+import type {
+  AccountResponse,
+  ApiResponse,
+  TokenPayload,
+  TokenResponse,
+} from "~/types";
 
 export const useAuthStore = defineStore("auth", () => {
   const token = ref<TokenResponse | null>(null);
@@ -10,8 +16,11 @@ export const useAuthStore = defineStore("auth", () => {
   const isAuthenticated = computed(
     () => token.value !== null && payload.value !== null
   );
+  const isAuthLoaded = ref<boolean>(false);
 
+  const userProfile = ref<AccountResponse | null>(null);
   const router = useRouter();
+
   const setCookie = (token: TokenResponse) => {
     let cookieExpire = new Date(token.accessExpire);
     // Convert to milliseconds: 7 hours * 60 minutes * 60 seconds * 1000 milliseconds
@@ -28,39 +37,36 @@ export const useAuthStore = defineStore("auth", () => {
       payload.value = JSON.parse(atob(token.value.accessToken.split(".")[1]));
       setCookie(token.value);
       if (payload.value) {
-        const timeout = (payload.value.exp - Date.now() / 1000) * 1000 - 10000;
-        const refresh = token.value.refreshToken;
-
-        setTimeout(() => {
-          console.log("settime out Refreshing auth");
-          refreshAuth(refresh);
-        }, timeout);
-
+        setInterceptors();
+        setupRefreshTimeout();
+        getProfile();
         router.push("/");
       }
     }
   };
+  const setupRefreshTimeout = () => {
+    if (token.value && payload.value) {
+      const timeout = (payload.value.exp - Date.now() / 1000) * 1000 - 10000;
+      const refresh = token.value.refreshToken;
+
+      setTimeout(() => {
+        console.log("settime out Refreshing auth");
+        refreshAuth(refresh);
+      }, timeout);
+    }
+  };
 
   const loadAuth = () => {
+    console.log("Loading auth");
+    if (isAuthLoaded.value) return;
     const cookie = useCookie<TokenResponse | null>("auth");
     if (cookie.value) {
-      console.log("Loading auth");
       token.value = cookie.value;
       payload.value = JSON.parse(atob(token.value.accessToken.split(".")[1]));
       if (payload.value) {
         const timout = (payload.value.exp - Date.now() / 1000) * 1000 - 10000;
-
-        client.interceptors.request.use(
-          (config) => {
-            if (token.value) {
-              config.headers.Authorization = `Bearer ${token.value.accessToken}`;
-            }
-            return config;
-          },
-          (error) => {
-            return Promise.reject(error);
-          }
-        );
+        setInterceptors();
+        getProfile();
         if (timout < 0) {
           console.log("Token expired");
           logout();
@@ -68,6 +74,23 @@ export const useAuthStore = defineStore("auth", () => {
       }
     } else {
       logout();
+    }
+    isAuthLoaded.value = true;
+  };
+
+  const setInterceptors = () => {
+    if (token.value) {
+      client.interceptors.request.use(
+        (config) => {
+          if (token.value) {
+            config.headers.Authorization = `Bearer ${token.value.accessToken}`;
+          }
+          return config;
+        },
+        (error) => {
+          return Promise.reject(error);
+        }
+      );
     }
   };
 
@@ -87,11 +110,30 @@ export const useAuthStore = defineStore("auth", () => {
     }
   };
 
+  const getProfile = async () => {
+    try {
+      const res = await profile();
+      if (res.status === 200 && res.data.result) {
+        userProfile.value = res.data.result;
+      }
+    } catch (error) {
+      if (typeof error === "string") {
+        console.log(error);
+      } else if (error instanceof AxiosError) {
+        const axiosError = error as AxiosError;
+        const responseData = axiosError.response?.data as { message: string };
+        console.log("error get profile ", responseData.message);
+      }
+    }
+  };
+
   const logout = () => {
     token.value = null;
     payload.value = null;
     const cookie = useCookie("auth");
     cookie.value = null;
+    isAuthLoaded.value = false;
+    userProfile.value = null;
     router.push("/login");
   };
 
@@ -99,7 +141,11 @@ export const useAuthStore = defineStore("auth", () => {
     loadAuth,
     transfer,
     logout,
+    setInterceptors,
+    getProfile,
+    userProfile,
     isAuthenticated,
+    isAuthLoaded,
     token,
     payload,
   };

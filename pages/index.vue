@@ -1,32 +1,29 @@
 <script setup lang="ts">
-import { useAuthStore } from "@/store/authStore";
 import { AxiosError } from "axios";
 import { getpostList } from "~/service/post";
-import type { PaginationResponse, PostResponse, PostRequest } from "~/types";
+import type { PostResponse, PostRequest } from "~/types";
 import { DefaultPagination } from "~/types/enum";
 
-const authStore = useAuthStore();
 const toast = useToast();
 
 const queryPost = ref<PostRequest>({
   page: DefaultPagination.pages,
   size: DefaultPagination.limit,
 });
-const pagination = ref<PaginationResponse>({
-  current: 0,
-  limit: 0,
-  records: 0,
-  pages: 0,
+const pagination = reactive({
+  currentPage: 0,
+  pageCount: 0,
+  totalPage: 0,
 });
-const postList = ref<PostResponse[]>([]);
+const postList = ref<PostResponse[] | null>([]);
 
 const loadData = async () => {
   try {
     const res = await getpostList(queryPost.value);
     if (res.status === 200 && res.data.code === 200) {
       postList.value = res.data.result;
-      pagination.value = res.data.pagination;
-      console.log("pagination", pagination.value);
+      pagination.pageCount = res.data.pagination.pages;
+      pagination.totalPage = res.data.pagination.records;
     }
   } catch (error) {
     if (typeof error === "string") {
@@ -44,10 +41,9 @@ const loadData = async () => {
 };
 
 const handlePagination = async (page: number) => {
-  if (page !== queryPost.value.page) {
-    queryPost.value.page = page;
-    await loadData();
-  }
+  console.log("page", page);
+  queryPost.value.page = page;
+  await loadData();
 };
 await loadData();
 </script>
@@ -60,10 +56,12 @@ await loadData();
   </div>
   <div class="flex justify-end my-10 p-10">
     <UPagination
-      v-model="pagination.current"
-      :page-count="pagination?.current"
-      :total="pagination?.records"
-      @click="() => handlePagination(pagination.current)"
+      v-model="pagination.currentPage"
+      :total="pagination.totalPage"
+      :page-count="pagination.pageCount"
+      @click="() => handlePagination(pagination.currentPage)"
+      show-last
+      show-first
     />
   </div>
 </template>

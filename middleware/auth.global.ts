@@ -6,11 +6,14 @@ export default defineNuxtRouteMiddleware((to, from) => {
 
   console.log("Global middleware");
 
-  if (!pathList.includes(to.path)) {
+  if (!authStore.isAuthLoaded) {
     authStore.loadAuth();
-    if (authStore.isAuthenticated === false) {
-      console.log("to login page");
-      return navigateTo("/login");
-    }
+  }
+
+  if (!pathList.includes(to.path) && !authStore.isAuthenticated) {
+    console.log("Redirecting to login page");
+    return navigateTo("/login");
+  } else {
+    authStore.setInterceptors();
   }
 });

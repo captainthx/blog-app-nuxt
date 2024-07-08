@@ -68,11 +68,7 @@ const items = [
         :items="items"
         :popper="{ placement: 'bottom-start' }"
       >
-        <UButton
-          color="white"
-          label="Options"
-          trailing-icon="i-heroicons-chevron-down-20-solid"
-        />
+        <UIcon name="i-heroicons-user-solid" />
       </UDropdown>
       <ULink
         v-else

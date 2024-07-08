@@ -4,4 +4,7 @@ import client from "./request";
 const getpostList = (params: PostRequest): ServerResponse<PostResponse[]> =>
   client.get("/v1/post", { params });
 
-export { getpostList };
+const getPostByid = (id: number): ServerResponse<PostResponse> =>
+  client.get(`/v1/post/${id}`);
+
+export { getpostList, getPostByid };

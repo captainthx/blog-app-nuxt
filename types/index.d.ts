@@ -64,6 +64,7 @@ export interface PostResponse {
   comments: CommentResponse[];
   tags: string[];
   postLikes: AccountResponse[];
+  author: AccountResponse;
 }
 
 export interface AccountResponse {
@@ -89,4 +90,8 @@ export interface PostRequest extends Pagination {
   title?: string;
   content?: string;
   tags?: string[];
+}
+
+export interface FavoritePostRequest {
+  postId: number;
 }
