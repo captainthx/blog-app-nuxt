@@ -7,4 +7,7 @@ const getpostList = (params: PostRequest): ServerResponse<PostResponse[]> =>
 const getPostByid = (id: number): ServerResponse<PostResponse> =>
   client.get(`/v1/post/${id}`);
 
-export { getpostList, getPostByid };
+const likePost = (postId: number): ServerResponse<void> =>
+  client.patch(`/v1/post/likes/${postId}`);
+
+export { getpostList, getPostByid, likePost };

@@ -15,12 +15,19 @@ export default defineNuxtConfig({
       },
     ],
     "dayjs-nuxt",
+    "nuxt-tiptap-editor",
   ],
   dayjs: {
     locales: ["en", "th"],
     plugins: ["relativeTime", "utc", "timezone"],
     defaultLocale: "en",
     defaultTimezone: "Asia/Bangkok",
+  },
+  tiptap: {
+    prefix: "Tiptap",
+    lowlight: {
+      theme: "github-dark",
+    },
   },
   devtools: {
     enabled: true,

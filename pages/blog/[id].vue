@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { AxiosError } from "axios";
-import { getPostByid } from "~/service/post";
+import { faveritePost } from "~/service/favoritePost";
+import { getPostByid, likePost } from "~/service/post";
 import { useAuthStore } from "~/store/authStore";
 import type { PostResponse } from "~/types";
 
 const route = useRoute();
 const authStore = useAuthStore();
-const id = route.params.id;
+const postId = route.params.id;
 const blog = ref<PostResponse | null>(null);
 const toast = useToast();
 const isComment = ref<boolean>(false);
@@ -17,7 +18,7 @@ const openCommentfield = () => {
 
 const loadData = async () => {
   try {
-    const res = await getPostByid(Number(id));
+    const res = await getPostByid(Number(postId));
     if (res.status === 200 && res.data.result) {
       blog.value = res.data.result;
     }
@@ -37,35 +38,80 @@ const isLiked = computed(() => {
     return false;
   }
   const result = blog.value.postLikes.some((like) => {
-    const likeAccountId = like.account?.id;
-    console.log(
-      `Comparing like.account.id: ${likeAccountId} (${typeof likeAccountId}) with userProfile.id: ${
-        authStore.userProfile?.id
-      } (${typeof authStore.userProfile?.id})`
-    );
+    const likeAccountId = like.account.id;
     return likeAccountId === authStore.userProfile?.id;
   });
 
   return result;
 });
 
-const handlelike = async () => {
-  console.log("isLiked", isLiked.value);
-  if (isLiked.value) {
-    toast.add({
-      title: "You already liked this post",
-      description: "You can't like a post more than once",
-      color: "red",
-      timeout: 3000,
-    });
+const isFavorite = computed(() => {
+  if (!blog.value || !blog.value.favoritesPosts || !authStore.userProfile) {
+    return false;
   }
-  // Call the like API
-  toast.add({
-    title: "You liked this post",
-    description: "You can't like a post more than once",
-    color: "green",
-    timeout: 3000,
+  const result = blog.value.favoritesPosts.some((fav) => {
+    const favoriteAccountId = fav.account.id;
+    return favoriteAccountId === authStore.userProfile?.id;
   });
+
+  return result;
+});
+
+const handlelike = async () => {
+  try {
+    const res = await likePost(Number(postId));
+    if (res.status === 200 && res.data.code === 200) {
+      console.log("response ", res.data);
+      toast.add({
+        title: "You liked this post",
+        description: res.data.message,
+        color: "green",
+        timeout: 3000,
+      });
+      await loadData();
+    }
+  } catch (error) {
+    if (typeof error === "string") {
+      console.log("error like post ", error);
+    } else if (error instanceof AxiosError) {
+      const axiosError = error as AxiosError;
+      const responseData = axiosError.response?.data as { message: string };
+      toast.add({
+        title: "like post failed",
+        description: responseData.message,
+        color: "red",
+        timeout: 3000,
+      });
+    }
+  }
+};
+
+const handleFavoritePost = async () => {
+  try {
+    const res = await faveritePost({ postId: Number(postId) });
+    if (res.status === 200 && res.data.code === 200) {
+      toast.add({
+        title: "You favorite this post",
+        description: res.data.message,
+        color: "green",
+        timeout: 3000,
+      });
+      await loadData();
+    }
+  } catch (error) {
+    if (typeof error === "string") {
+      console.log("error favorite post ", error);
+    } else if (error instanceof AxiosError) {
+      const axiosError = error as AxiosError;
+      const responseData = axiosError.response?.data as { message: string };
+      toast.add({
+        title: "favorite post failed",
+        description: responseData.message,
+        color: "red",
+        timeout: 3000,
+      });
+    }
+  }
 };
 
 await loadData();
@@ -73,21 +119,24 @@ await loadData();
 
 <template>
   <div class="flex flex-col gap-4 w-full" v-if="blog">
-    {{ isLiked }} {{ authStore.userProfile?.id }}
+    <h1 class="text-3xl font-semibold text-center">{{ blog.title }}</h1>
     <div>
       <UCard>
         <template #header>
-          <UAvatar :src="blog.author.avatar" />
-          {{ blog.title }}
+          <div class="flex flex-rows gap-4 items-center">
+            <UAvatar :src="blog.author.avatar" />
+            {{ formatDate(blog.cdt) }}
+          </div>
         </template>
-
         {{ blog.content }}
         <template #footer>
           <div class="flex justify-between">
-            <UIcon
-              :class="isLiked ? 'text-red-500' : 'text-gray-500'"
+            <UButton
+              :disabled="isLiked"
+              color="white"
+              class="text-red-500"
               variant="ghost"
-              :name="isLiked ? 'i-heroicons-heart-solid' : 'i-heroicons-heart'"
+              :icon="isLiked ? 'i-heroicons-heart-solid' : 'i-heroicons-heart'"
               @click="handlelike"
             />
             <UButton
@@ -98,27 +147,22 @@ await loadData();
             />
 
             <UButton
+              :disabled="isFavorite"
               color="white"
               variant="ghost"
-              icon="i-heroicons-bookmark"
+              class="text-yellow-500"
+              :icon="
+                isFavorite
+                  ? 'i-heroicons-bookmark-20-solid'
+                  : 'i-heroicons-bookmark'
+              "
+              @click="handleFavoritePost"
             />
           </div>
         </template>
       </UCard>
     </div>
-    <div>
-      <UCard> show comment</UCard>
-    </div>
-    <div class="mt-5 mb-10 flex justify-between" v-show="isComment">
-      <div class="w-full">
-        <div class="mb-2">
-          <UTextarea autoresize size="xl" />
-        </div>
-        <div class="flex justify-end">
-          <UButton>Send</UButton>
-        </div>
-      </div>
-    </div>
+    <AComment :commentsData="blog.comments" :open-comment="isComment" />
   </div>
 </template>
 

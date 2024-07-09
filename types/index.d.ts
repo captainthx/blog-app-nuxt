@@ -63,11 +63,16 @@ export interface PostResponse {
   likeCount: number;
   comments: CommentResponse[];
   tags: string[];
-  postLikes: PostLikeResponse[];
   author: AccountResponse;
+  postLikes: PostLikeResponse[];
+  favoritesPosts: FavoritePostResponse[];
 }
 
 export interface PostLikeResponse {
+  account: AccountResponse;
+}
+
+export interface FavoritePostResponse {
   account: AccountResponse;
 }
 
