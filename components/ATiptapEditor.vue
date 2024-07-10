@@ -1,21 +1,62 @@
 <script setup lang="ts">
-const lowlight = TiptapcreateLowlight(Tiptapall);
+import Blockquote from "@tiptap/extension-blockquote";
+import BulletList from "@tiptap/extension-bullet-list";
+import Heading from "@tiptap/extension-heading";
+import TextAlign from "@tiptap/extension-text-align";
+import { StarterKit } from "@tiptap/starter-kit";
+
+const props = defineProps({
+  value: {
+    type: String,
+    required: true,
+  },
+});
+const emit = defineEmits(["update:value"]);
+
 const editor = useEditor({
+  autofocus: "start",
   extensions: [
-    TiptapStarterKit.configure({
-      codeBlock: false,
+    StarterKit.configure({}),
+    TextAlign.configure({
+      types: ["heading", "paragraph"],
     }),
-    TiptapCodeBlockLowlight.configure({ lowlight }),
+    BulletList.configure({
+      HTMLAttributes: {
+        class: "list-disc pl-8",
+      },
+    }),
+    Blockquote.configure({
+      HTMLAttributes: {
+        class: "border-l-8  pl-8",
+      },
+    }),
+    Heading.extend({
+      levels: [1, 2, 3, 4, 5, 6],
+      renderHTML({ node }) {
+        const level = this.options.levels.includes(node.attrs.level)
+          ? node.attrs.level
+          : this.options.levels[0];
+        const classes: { [index: number]: string } = {
+          1: "text-4xl",
+          2: "text-3xl",
+          3: "text-2xl",
+          4: "text-xl",
+          5: "text-lg",
+          6: "text-base",
+        };
+        return ["h1", { class: classes[level] }, 0];
+      },
+    }).configure({ levels: [1, 2, 3, 4, 5, 6] }),
   ],
   editorProps: {
     attributes: {
-      class: "bg-red-200 h-52",
+      class: "h-52 focus:outline-none border-2 rounded-md p-4 shadow-sm ",
     },
   },
-});
-
-onMounted(() => {
-  unref(editor)?.commands.setContent("hello world");
+  content: props.value,
+  onUpdate(props) {
+    emit("update:value", props.editor.getHTML());
+  },
 });
 
 onBeforeUnmount(() => {
@@ -26,124 +67,154 @@ onBeforeUnmount(() => {
 <template>
   <div>
     <div v-if="editor">
-      <UButton
-        @click="editor.chain().focus().toggleBold().run()"
-        :disabled="!editor.can().chain().focus().toggleBold().run()"
-        :color="editor.isActive('bold') ? 'primary' : 'gray'"
+      <div
+        class="flex justify-around align-middle items-center border-2 rounded-md p-2"
       >
-        Bold
-      </UButton>
-      <UButton
-        @click="editor.chain().focus().toggleItalic().run()"
-        :disabled="!editor.can().chain().focus().toggleItalic().run()"
-        :color="editor.isActive('italic') ? 'primary' : 'gray'"
-      >
-        Italic
-      </UButton>
-      <UButton
-        @click="editor.chain().focus().toggleStrike().run()"
-        :disabled="!editor.can().chain().focus().toggleStrike().run()"
-        :color="editor.isActive('strike') ? 'primary' : 'gray'"
-      >
-        Strike
-      </UButton>
-      <UButton
-        @click="editor.chain().focus().toggleCode().run()"
-        :disabled="!editor.can().chain().focus().toggleCode().run()"
-        :color="editor.isActive('code') ? 'primary' : 'gray'"
-      >
-        Code
-      </UButton>
-      <UButton @click="editor.chain().focus().unsetAllMarks().run()">
-        Clear marks
-      </UButton>
-      <UButton @click="editor.chain().focus().clearNodes().run()">
-        Clear nodes
-      </UButton>
-      <UButton
-        @click="editor.chain().focus().setParagraph().run()"
-        :color="editor.isActive('paragraph') ? 'primary' : 'gray'"
-      >
-        Paragraph
-      </UButton>
-      <UButton
-        @click="editor.chain().focus().toggleHeading({ level: 1 }).run()"
-        :color="editor.isActive('heading', { level: 1 }) ? 'primary' : 'gray'"
-      >
-        H1
-      </UButton>
-      <UButton
-        @click="editor.chain().focus().toggleHeading({ level: 2 }).run()"
-        :color="editor.isActive('heading', { level: 2 }) ? 'primary' : 'gray'"
-      >
-        H2
-      </UButton>
-      <UButton
-        @click="editor.chain().focus().toggleHeading({ level: 3 }).run()"
-        :color="editor.isActive('heading', { level: 3 }) ? 'primary' : 'gray'"
-      >
-        H3
-      </UButton>
-      <UButton
-        @click="editor.chain().focus().toggleHeading({ level: 4 }).run()"
-        :color="editor.isActive('heading', { level: 4 }) ? 'primary' : 'gray'"
-      >
-        H4
-      </UButton>
-      <UButton
-        @click="editor.chain().focus().toggleHeading({ level: 5 }).run()"
-        :color="editor.isActive('heading', { level: 5 }) ? 'primary' : 'gray'"
-      >
-        H5
-      </UButton>
-      <UButton
-        @click="editor.chain().focus().toggleHeading({ level: 6 }).run()"
-        :color="editor.isActive('heading', { level: 6 }) ? 'primary' : 'gray'"
-      >
-        H6
-      </UButton>
-      <UButton
-        @click="editor.chain().focus().toggleBulletList().run()"
-        :color="editor.isActive('bulletList') ? 'primary' : 'gray'"
-      >
-        Bullet list
-      </UButton>
-      <UButton
-        @click="editor.chain().focus().toggleOrderedList().run()"
-        :color="editor.isActive('orderedList') ? 'primary' : 'gray'"
-      >
-        Ordered list
-      </UButton>
-      <UButton
-        @click="editor.chain().focus().toggleCodeBlock().run()"
-        :color="editor.isActive('codeBlock') ? 'primary' : 'gray'"
-      >
-        Code block
-      </UButton>
-      <UButton
-        @click="editor.chain().focus().toggleBlockquote().run()"
-        :color="editor.isActive('blockquote') ? 'primary' : 'gray'"
-      >
-        Blockquote
-      </UButton>
-      <UButton @click="editor.chain().focus().setHorizontalRule().run()">
-        Horizontal rule
-      </UButton>
-      <UButton @click="editor.chain().focus().setHardBreak().run()">
-        Hard break
-      </UButton>
-      <UButton
-        @click="editor.chain().focus().undo().run()"
-        :disabled="!editor.can().chain().focus().undo().run()"
-      >
-        Undo
-      </UButton>
-      <UButton
-        @click="editor.chain().focus().redo().run()"
-        :disabled="!editor.can().chain().focus().redo().run()"
-      >
-        Redo
-      </UButton>
+        <div>
+          <UButton
+            @click="editor.chain().focus().toggleBold().run()"
+            :disabled="!editor.can().chain().focus().toggleBold().run()"
+            :color="editor.isActive('bold') ? 'primary' : 'gray'"
+          >
+            B
+          </UButton>
+          <UButton
+            @click="editor.chain().focus().toggleItalic().run()"
+            :disabled="!editor.can().chain().focus().toggleItalic().run()"
+            :color="editor.isActive('italic') ? 'primary' : 'gray'"
+          >
+            /
+          </UButton>
+
+          <UButton
+            @click="editor.chain().focus().toggleStrike().run()"
+            :disabled="!editor.can().chain().focus().toggleStrike().run()"
+            :color="editor.isActive('strike') ? 'primary' : 'gray'"
+          >
+            T
+          </UButton>
+          <UButton
+            @click="editor.chain().focus().unsetAllMarks().run()"
+            variant="ghost"
+          >
+            clear
+          </UButton>
+        </div>
+        <div>
+          <UButton
+            @click="editor.chain().focus().setParagraph().run()"
+            :color="editor.isActive('paragraph') ? 'primary' : 'gray'"
+          >
+            P
+          </UButton>
+          <UButton
+            @click="editor.chain().focus().toggleHeading({ level: 1 }).run()"
+            :color="
+              editor.isActive('heading', { level: 1 }) ? 'primary' : 'gray'
+            "
+          >
+            H1
+          </UButton>
+          <UButton
+            @click="editor.chain().focus().toggleHeading({ level: 2 }).run()"
+            :color="
+              editor.isActive('heading', { level: 2 }) ? 'primary' : 'gray'
+            "
+          >
+            H2
+          </UButton>
+          <UButton
+            @click="editor.chain().focus().toggleHeading({ level: 3 }).run()"
+            :color="
+              editor.isActive('heading', { level: 3 }) ? 'primary' : 'gray'
+            "
+          >
+            H3
+          </UButton>
+          <UButton
+            @click="editor.chain().focus().toggleHeading({ level: 4 }).run()"
+            :color="
+              editor.isActive('heading', { level: 4 }) ? 'primary' : 'gray'
+            "
+          >
+            H4
+          </UButton>
+          <UButton
+            @click="editor.chain().focus().toggleHeading({ level: 5 }).run()"
+            :color="
+              editor.isActive('heading', { level: 5 }) ? 'primary' : 'gray'
+            "
+          >
+            H5
+          </UButton>
+          <UButton
+            @click="editor.chain().focus().toggleHeading({ level: 6 }).run()"
+            :color="
+              editor.isActive('heading', { level: 6 }) ? 'primary' : 'gray'
+            "
+          >
+            H6
+          </UButton>
+        </div>
+        <div class="flex flex-rows justify-center gap-1">
+          <UButton
+            icon="i-heroicons-list-bullet-20-solid"
+            @click="editor.chain().focus().toggleBulletList().run()"
+            :color="editor.isActive('bulletList') ? 'primary' : 'gray'"
+          />
+          <UButton
+            @click="editor.chain().focus().toggleBlockquote().run()"
+            :color="editor.isActive('blockquote') ? 'primary' : 'gray'"
+            >Quote</UButton
+          >
+          <UButton
+            icon="i-heroicons-bars-3-bottom-left-20-solid"
+            @click="editor.chain().focus().setTextAlign('left').run()"
+            :color="editor.isActive({ textAlign: 'left' }) ? 'primary' : 'gray'"
+          >
+          </UButton>
+          <UButton
+            icon="i-heroicons-bars-3-20-solid"
+            @click="editor.chain().focus().setTextAlign('center').run()"
+            :color="
+              editor.isActive({ textAlign: 'center' }) ? 'primary' : 'gray'
+            "
+          />
+
+          <UButton
+            icon="i-heroicons-bars-3-bottom-right-20-solid"
+            @click="editor.chain().focus().setTextAlign('right').run()"
+            :color="
+              editor.isActive({ textAlign: 'right' }) ? 'primary' : 'gray'
+            "
+          >
+          </UButton>
+          <UButton
+            icon="i-heroicons-bars-4-20-solid"
+            @click="editor.chain().focus().setTextAlign('justify').run()"
+            :color="
+              editor.isActive({ textAlign: 'justify' }) ? 'primary' : 'gray'
+            "
+          >
+          </UButton>
+        </div>
+        <div class="">
+          <UButton
+            icon="i-heroicons-arrow-uturn-left-20-solid"
+            @click="editor.chain().focus().undo().run()"
+            :disabled="!editor.can().chain().focus().undo().run()"
+            color="gray"
+            variant="ghost"
+          />
+          <UButton
+            icon="i-heroicons-arrow-uturn-right-20-solid"
+            @click="editor.chain().focus().redo().run()"
+            :disabled="!editor.can().chain().focus().redo().run()"
+            color="gray"
+            variant="ghost"
+          />
+        </div>
+      </div>
     </div>
     <TiptapEditorContent :editor="editor" />
   </div>

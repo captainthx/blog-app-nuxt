@@ -11,8 +11,10 @@ const props = defineProps({
   },
 });
 const update = (value: string) => {
-  console.log(value);
+  console.log("editor value", value);
 };
+
+const comment = ref<string>("");
 </script>
 
 <template>
@@ -40,8 +42,8 @@ const update = (value: string) => {
     </UCard>
     <div class="mt-5 mb-10 flex justify-between" v-show="openComment">
       <div class="w-full">
-        <div class="mb-2 h-52">
-          <ATiptapEditor />
+        <div class="mb-16 h-52">
+          <ATiptapEditor :value="comment" @update:value="update" />
           <!-- <UTextarea autoresize size="xl" placeholder="comment ..." /> -->
         </div>
         <div class="flex justify-end">

@@ -38,21 +38,16 @@ export const useAuthStore = defineStore("auth", () => {
       setCookie(token.value);
       if (payload.value) {
         setInterceptors();
-        setupRefreshTimeout();
         getProfile();
+        const timeout =
+          (payload.value.exp - Math.floor(Date.now() / 1000)) * 1000 - 10000;
+        const refresh = token.value.refreshToken;
+        setTimeout(() => {
+          console.log("settime out Refreshing auth");
+          refreshAuth(refresh);
+        }, timeout);
         router.push("/");
       }
-    }
-  };
-  const setupRefreshTimeout = () => {
-    if (token.value && payload.value) {
-      const timeout = (payload.value.exp - Date.now() / 1000) * 1000 - 10000;
-      const refresh = token.value.refreshToken;
-
-      setTimeout(() => {
-        console.log("settime out Refreshing auth");
-        refreshAuth(refresh);
-      }, timeout);
     }
   };
 
