@@ -30,6 +30,7 @@ const authStore = useAuthStore();
 </script>
 .
 <template>
+  <ALoadingBar :duration="10000" />
   <ANavbar />
   <UContainer class="w-screen h-screen mt-12 p-4">
     <UNotifications />
