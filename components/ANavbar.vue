@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { useAuthStore } from "~/store/authStore";
 
-const authStore = useAuthStore();
+const { logout, isAuthenticated } = useAuthStore();
+const router = useRouter();
 const links = [
   {
     label: "Home",
@@ -39,7 +40,10 @@ const items = [
     {
       label: "Logout",
       icon: "i-heroicons-arrow-right-start-on-rectangle-solid",
-      click: () => authStore.logout(),
+      click: () => {
+        logout();
+        router.push("/login");
+      },
     },
   ],
 ];
@@ -47,7 +51,7 @@ const items = [
 
 <template>
   <div
-    class="fixed w-full top-0 p-3 items-center h-10 flex flex-row justify-between bg-slate-100"
+    class="fixed w-full top-0 p-3 items-center h-10 flex flex-row justify-between bg-white/30 bg-opacity-60 border-b-2"
   >
     <div class="flex flex-row gap-4">
       <ULink
@@ -62,13 +66,13 @@ const items = [
         {{ item.label }}
       </ULink>
     </div>
-    <div>
+    <div class="flex flex-row gap-2 mr-5">
       <UDropdown
-        v-if="authStore.isAuthenticated"
+        v-if="isAuthenticated"
         :items="items"
         :popper="{ placement: 'bottom-start' }"
       >
-        <UIcon name="i-heroicons-user-solid" />
+        <UIcon name="i-heroicons-user" />
       </UDropdown>
       <ULink
         v-else
@@ -83,5 +87,3 @@ const items = [
     </div>
   </div>
 </template>
-
-<style scoped></style>

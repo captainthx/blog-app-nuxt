@@ -1,7 +1,7 @@
-import type { ServerResponse } from "~/types";
+import type { CommentPostRequest, ServerResponse } from "~/types";
 import client from "./request";
 
-const commentPost = (body: any): ServerResponse<void> =>
+const commentPost = (body: CommentPostRequest): ServerResponse<void> =>
   client.post("/v1/comment", body);
 
 export { commentPost };

@@ -11,7 +11,7 @@ const queryPost = ref<PostRequest>({
   size: DefaultPagination.limit,
 });
 const pagination = reactive({
-  currentPage: 0,
+  currentPage: 1,
   pageCount: 0,
   totalPage: 0,
 });
@@ -20,18 +20,18 @@ const postList = ref<PostResponse[] | null>([]);
 const loadData = async () => {
   try {
     const res = await getpostList(queryPost.value);
-    if (res.status === 200 && res.data.code === 200) {
+    if (res.status === 200 && res.data.result) {
       postList.value = res.data.result;
       pagination.pageCount = res.data.pagination.pages;
       pagination.totalPage = res.data.pagination.records;
     }
   } catch (error) {
-    if (typeof error === "string") {
-    } else if (error instanceof AxiosError) {
+    if (error instanceof AxiosError) {
       const axiosError = error as AxiosError;
       const responseData = axiosError.response?.data as { message: string };
+      console.error("error load data", responseData);
       toast.add({
-        title: "Load data failed",
+        title: "Load post failed",
         description: responseData.message,
         timeout: 3000,
         color: "red",
@@ -39,13 +39,14 @@ const loadData = async () => {
     }
   }
 };
-
 const handlePagination = async (page: number) => {
-  console.log("page", page);
   queryPost.value.page = page;
   await loadData();
 };
-await loadData();
+
+onNuxtReady(async () => {
+  await loadData();
+});
 </script>
 
 <template>
