@@ -64,16 +64,8 @@ export interface PostResponse {
   comments: CommentResponse[];
   tags: string[];
   author: AccountResponse;
-  postLikes: PostLikeResponse[];
-  favoritesPosts: FavoritePostResponse[];
-}
-
-export interface PostLikeResponse {
-  account: AccountResponse;
-}
-
-export interface FavoritePostResponse {
-  account: AccountResponse;
+  postLikes: AccountResponse[];
+  favoritesPosts: AccountResponse[];
 }
 
 export interface AccountResponse {
@@ -98,9 +90,24 @@ export interface Pagination {
 export interface PostRequest extends Pagination {
   title?: string;
   content?: string;
-  tags?: string[];
 }
 
 export interface FavoritePostRequest {
   postId: number;
+}
+
+export interface CommentPostRequest {
+  postId: number;
+  comment: string;
+}
+
+export interface ForgotPasswordRequest {
+  username: string;
+  email: string;
+}
+
+export interface ResetPasswordRequest {
+  username: string;
+  password: string;
+  code: string;
 }

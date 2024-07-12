@@ -1,7 +1,7 @@
 import { useAuthStore } from "~/store/authStore";
 
 export default defineNuxtPlugin((nuxtApp) => {
-  const authStore = useAuthStore();
-  authStore.loadAuth();
+  const { loadAuth } = useAuthStore();
+  loadAuth();
   console.log("Auth plugin initialized");
 });

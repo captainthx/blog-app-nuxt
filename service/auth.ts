@@ -4,7 +4,8 @@ import type {
   ServerResponse,
   TokenResponse,
 } from "~/types";
-import client from "./request";
+import { create } from "./request";
+const client = create();
 
 const login = (body: LoginRequest): ServerResponse<TokenResponse> =>
   client.post("/v1/auth/login", body);
