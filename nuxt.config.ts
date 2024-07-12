@@ -1,5 +1,11 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
+  routeRules: {
+    "/": { prerender: true },
+    "/profile/**": { ssr: false },
+    "/forgot-password": { ssr: false },
+    "/reset-password": { ssr: false },
+  },
   modules: [
     "@nuxt/ui",
     "@pinia/nuxt",
