@@ -28,10 +28,20 @@ export const useAuthStore = defineStore("auth", () => {
       if (payload.value) {
         const timeout = (payload.value.exp - Date.now() / 1000) * 1000;
         console.log("Token expires in", timeout, "ms");
-
+        console.log(
+          "Refresh expires in",
+          (token.value.refreshExpire - Date.now() / 1000) * 1000,
+          "ms"
+        );
         if (timeout < 0) {
           console.log("Token expired");
-          refreshAuth(token.value.refreshToken);
+          if ((token.value.refreshExpire - Date.now() / 1000) * 1000 > 0) {
+            console.log("Refresh token not expired");
+            refreshAuth(token.value.refreshToken);
+          } else {
+            console.log("Refresh token expired");
+            logout();
+          }
         } else if (timeout > 1) {
           const refresh = token.value.refreshToken;
           if (import.meta.client) {

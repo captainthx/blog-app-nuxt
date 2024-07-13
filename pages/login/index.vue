@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { FormError } from "#ui/types";
 import { AxiosError } from "axios";
-import { login } from "~/service/Auth";
+import { login } from "~/service/auth";
 import { useAuthStore } from "~/store/authStore";
 
 useHead({
@@ -45,6 +45,7 @@ const handleLogin = async () => {
         description: "You have successfully logged in",
         timeout: 3000,
       });
+      useRouter().push("/");
     }
   } catch (error) {
     if (typeof error === "string") {
@@ -64,7 +65,7 @@ const handleLogin = async () => {
 </script>
 
 <template>
-  <div class="flex justify-center h-full items-center">
+  <div class="flex justify-center min-h-[80dvh] items-center">
     <UCard>
       <div class="flex flex-col gap-2">
         <p class="text-center text-2xl font-semibold">Login</p>
@@ -78,20 +79,27 @@ const handleLogin = async () => {
           <div class="mt-2 flex justify-center">
             <UButton
               :loading="state.submit"
-              color="blue"
+              color="green"
               variant="soft"
-              :disable="state.submit"
+              :disabled="state.submit"
               type="submit"
             >
               Login
             </UButton>
           </div>
         </UForm>
-        <h1>Or sign Up using</h1>
-        <div class="flex flex-row gap-2 justify-center">
+        <UButton
+          icon="i-heroicons-key"
+          to="/forgot-password"
+          variant="link"
+          color="black"
+        >
+          Forgot password</UButton
+        >
+        <!-- <div class="flex flex-row gap-2 justify-center">
           <UButton color="blue" variant="ghost">Facebook</UButton>
           <UButton color="green" variant="ghost">Google</UButton>
-        </div>
+        </div> -->
       </div>
     </UCard>
   </div>

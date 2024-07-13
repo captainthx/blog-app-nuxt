@@ -1,15 +1,9 @@
 import { useAuthStore } from "@/store/authStore";
 
 export default defineNuxtRouteMiddleware((to, from) => {
-  const pathList = [
-    "/login",
-    "/register",
-    "/forgot-password",
-    "/reset-password",
-  ];
+  const pathList = ["/login", "/register", "/forgot-password"];
 
   console.log("Global middleware");
-  console.log(`Navigating to: ${to.path}`);
 
   if (!pathList.includes(to.path)) {
     const { isAuthenticated } = useAuthStore();
@@ -19,5 +13,10 @@ export default defineNuxtRouteMiddleware((to, from) => {
       return navigateTo("/login");
     }
   }
-  console.log("User is authenticated or on a whitelisted path");
+
+  if (to.path === "/reset-password") {
+    if (to.query.token === undefined && to.query.username === undefined) {
+      return navigateTo("/forgot-password");
+    }
+  }
 });
