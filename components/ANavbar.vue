@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { useAuthStore } from "~/store/authStore";
 
-const { logout, isAuthenticated } = useAuthStore();
+const { logout } = useAuthStore();
+const { isAuthenticated } = storeToRefs(useAuthStore());
 const router = useRouter();
 const links = [
   {
@@ -10,14 +11,9 @@ const links = [
     to: "/",
   },
   {
-    label: "About",
-    icon: "i-heroicons-exclamation-circle",
-    to: "/about",
-  },
-  {
-    label: "Contact",
-    icon: "i-heroicons-device-phone-mobile",
-    to: "/contact",
+    label: "Blog",
+    icon: "i-heroicons-pencil-square-20-solid",
+    to: "/blog/write",
   },
 ];
 
@@ -28,12 +24,18 @@ const items = [
       avatar: {
         src: "https://avatars.githubusercontent.com/u/739984?v=4",
       },
+      click: () => {
+        router.push("/profile");
+      },
     },
   ],
   [
     {
-      label: "Edit",
+      label: "Write",
       icon: "i-heroicons-pencil-square-20-solid",
+      click: () => {
+        router.push("/blog/write");
+      },
     },
   ],
   [

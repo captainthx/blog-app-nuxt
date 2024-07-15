@@ -28,6 +28,13 @@ export interface LoginRequest {
   username: string;
   password: string;
 }
+
+export interface SignupRequest {
+  username: string;
+  password: string;
+  name: string;
+  mobile: string;
+}
 export interface RefreshTokenRequest {
   token: string;
 }
