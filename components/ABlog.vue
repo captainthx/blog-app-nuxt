@@ -28,9 +28,7 @@ const randomColor = () => {
         {{ blog.title }}
       </h3>
       <!--content-->
-      <p class="mt-1 text-gray-500 truncate">
-        {{ blog.content }}
-      </p>
+      <p v-html="blog.content" class="mt-1 text-gray-500 truncate"></p>
       <div class="flex justify-end mt-4">
         <ULink
           :to="`/blog/${blog.id}`"

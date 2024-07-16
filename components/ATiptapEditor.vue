@@ -71,10 +71,6 @@ const editor = useEditor({
   },
 });
 
-onMounted(() => {
-  unref(editor)?.commands.setContent("<p >Start typing...</p>");
-});
-
 onBeforeUnmount(() => {
   unref(editor)?.destroy();
 });

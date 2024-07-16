@@ -118,3 +118,10 @@ export interface ResetPasswordRequest {
   password: string;
   code: string;
 }
+
+export interface CreatePostRequest {
+  title: string;
+  content: string;
+  status: string;
+  tags: string[];
+}

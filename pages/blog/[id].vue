@@ -185,8 +185,7 @@ onMounted(async () => {
     </div>
     <div>
       <UCard>
-        {{ blog?.content }}
-        <template #footer> </template>
+        <div v-html="blog.content"></div>
       </UCard>
     </div>
     <ClientOnly>
