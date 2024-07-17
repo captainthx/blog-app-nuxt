@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { AxiosError } from "axios";
+import { getFile } from "~/service/file";
 import { createPost } from "~/service/post";
 
 const postStatus = [

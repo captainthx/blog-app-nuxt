@@ -125,3 +125,14 @@ export interface CreatePostRequest {
   status: string;
   tags: string[];
 }
+
+export interface UploadFileRequest {
+  file: FormData;
+  compress: boolean;
+}
+
+export interface UploadFileResponse {
+  urlPath: string;
+  image: name;
+  size: number;
+}
