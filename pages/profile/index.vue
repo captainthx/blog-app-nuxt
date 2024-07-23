@@ -1,29 +1,33 @@
 <script setup lang="ts">
+import type { FormSubmitEvent } from "@nuxt/ui/dist/runtime/types";
+import { AxiosError } from "axios";
 import { z } from "zod";
-import { getProfile } from "~/service/account";
+import { getProfile, updateAccount } from "~/service/account";
 import { getFile, uploadFile } from "~/service/file";
 import type { AccountResponse } from "~/types";
 
 const url = ref<string>("");
+const defaultImage =
+  "https://t4.ftcdn.net/jpg/01/64/16/59/360_F_164165971_ELxPPwdwHYEhg4vZ3F4Ej7OmZVzqq4Ov.jpg";
 const inputRef = ref<HTMLInputElement | null>(null);
 const imageFile = ref<File | null>(null);
-let profile = reactive<AccountResponse>({
+const profile = ref<AccountResponse>({
+  id: 0,
   username: "",
   name: "",
   mobile: "",
-  id: 0,
-  cdt: 0,
-  udt: 0,
   avatar: "",
 });
 const isOpenModal = ref<boolean>(false);
-
+const toast = useToast();
 const schema = z.object({
   name: z.string().min(6, "name Must be at least 6 characters"),
-  mobile: z.string().min(10, "Must be at least 10 characters"),
+  mobile: z
+    .string()
+    .min(10, "Must be at least 10 characters")
+    .max(10, "Must be at most 10 characters"),
 });
 
-type Schema = z.output<typeof schema>;
 const handleUploadFile = async () => {
   if (imageFile.value) {
     const formData = new FormData();
@@ -32,10 +36,39 @@ const handleUploadFile = async () => {
     try {
       const res = await uploadFile(formData);
       if (res.status === 200 && res.data.result) {
-        console.log(res.data.result);
+        profile.value.avatar = res.data.result.imageName;
+        imageFile.value = null;
+        handleUpadteAccout();
       }
     } catch (error) {
       console.log(error);
+    }
+  }
+};
+
+const handleUpadteAccout = async () => {
+  try {
+    const res = await updateAccount(profile.value);
+    if (res.status === 200 && res.data.result) {
+      console.log(res.data.result);
+      toast.add({
+        title: "Success",
+        description: "Update Profile success",
+        color: "green",
+        timeout: 3000,
+      });
+      await loadData();
+    }
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      const axiosError = error as AxiosError;
+      const responseData = axiosError.response?.data as { message: string };
+      toast.add({
+        title: "Update Profile failed",
+        description: responseData.message,
+        timeout: 3000,
+        color: "red",
+      });
     }
   }
 };
@@ -46,7 +79,6 @@ const triggerFileInput = () => {
   }
 };
 const changeFile = (event: Event) => {
-  console.log("change file");
   const file = (event.target as HTMLInputElement).files?.item(0);
   if (file) {
     const reader = new FileReader();
@@ -57,15 +89,10 @@ const changeFile = (event: Event) => {
     reader.readAsDataURL(file);
   }
 };
-const openModal = () => {
-  isOpenModal.value = true;
-};
 
 const getImage = async () => {
   try {
-    const res = await getFile(
-      "8f1936ae-eef0-4a0c-9596-f44c4c790660_captain.png"
-    );
+    const res = await getFile(profile.value.avatar);
     if (res.status === 200 && res.data) {
       url.value = URL.createObjectURL(res.data);
     }
@@ -73,31 +100,28 @@ const getImage = async () => {
     console.log(error);
   }
 };
+const handleUndoCrop = () => {
+  imageFile.value = null;
+  getImage();
+};
 const loadData = async () => {
   try {
     const res = await getProfile();
     if (res.status === 200 && res.data.result) {
-      profile = res.data.result;
+      profile.value = res.data.result;
     }
   } catch (error) {
     console.log(error);
   }
 };
-const handleUndo = () => {
-  imageFile.value = null;
-  url.value = "";
-};
 
 const updateCloseModal = (value: boolean) => {
-  console.log("emit from child", value);
-  isOpenModal.value = false;
-  url.value = "";
+  isOpenModal.value = value;
   if (inputRef.value) {
     inputRef.value.value = "";
   }
 };
 const resulCropSuccess = (result: any) => {
-  console.log("result", result);
   url.value = result.dataURL;
   imageFile.value = result.file;
 };
@@ -116,11 +140,7 @@ onBeforeMount(async () => {
         <NuxtImg
           @click="triggerFileInput"
           class="w-40 h-36 mt-2 rounded-full"
-          :src="
-            url
-              ? url
-              : 'https://png.pngtree.com/png-vector/20221125/ourmid/pngtree-no-image-available-icon-flatvector-illustration-pic-design-profile-vector-png-image_40966566.jpg'
-          "
+          :src="url ? url : defaultImage"
           alt="Avatar"
         />
         <input
@@ -130,6 +150,21 @@ onBeforeMount(async () => {
           type="file"
           @change="changeFile"
         />
+        <div class="flex justify-center gap-5 mt-5">
+          <UButton
+            v-show="imageFile"
+            icon="i-heroicons-arrow-uturn-left-solid"
+            color="white"
+            @click="handleUndoCrop"
+          />
+          <UButton
+            v-show="imageFile"
+            color="blue"
+            variant="ghost"
+            @click="handleUploadFile"
+            >confrim</UButton
+          >
+        </div>
         <UModal v-model="isOpenModal" :overlay="false">
           <ACropImage
             :urlImage="url"
@@ -139,7 +174,12 @@ onBeforeMount(async () => {
         </UModal>
       </div>
     </div>
-    <UForm class="flex flex-col gap-5" :schema="schema" :state="profile">
+    <UForm
+      class="flex flex-col gap-5"
+      :schema="schema"
+      :state="profile"
+      @submit="handleUpadteAccout"
+    >
       <UFormGroup label="username" name="username">
         <UInput
           type="text"
@@ -154,15 +194,10 @@ onBeforeMount(async () => {
       <UFormGroup label="mobile" name="mobile">
         <UInput type="text" v-model="profile.mobile" placeholder="mobile" />
       </UFormGroup>
+      <div class="flex justify-center gap-5 mt-5">
+        <UButton color="blue" type="submit">save</UButton>
+      </div>
     </UForm>
-    <div class="flex justify-center gap-5 mt-5">
-      <UButton
-        icon="i-heroicons-arrow-uturn-left-solid"
-        color="white"
-        @click="handleUndo"
-      />
-      <UButton color="blue" @click="handleUploadFile">save</UButton>
-    </div>
   </div>
 </template>
 

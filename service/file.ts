@@ -8,4 +8,5 @@ const uploadFile = (formData: FormData): ServerResponse<UploadFileResponse> =>
 
 const getFile = (filename: string) =>
   client.get(`/v1/upload/files/${filename}`, { responseType: "blob" });
+
 export { uploadFile, getFile };

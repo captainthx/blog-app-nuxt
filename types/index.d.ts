@@ -53,14 +53,6 @@ export interface Tabs {
   key: number;
   closable: boolean;
 }
-export interface AccountResponse {
-  id: number;
-  username: string;
-  name: string;
-  mobile: string;
-  cdt: number;
-  udt: number;
-}
 export interface PostResponse {
   id: number;
   cdt: number;
@@ -133,6 +125,10 @@ export interface UploadFileRequest {
 
 export interface UploadFileResponse {
   urlPath: string;
-  image: name;
-  size: number;
+  imageName: name;
+}
+export interface UpdateAccountRequest {
+  mobile?: string;
+  name?: string;
+  avatar?: string;
 }

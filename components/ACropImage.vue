@@ -19,7 +19,6 @@ const ready = () => {
   }
 };
 const cancel = () => {
-  console.log("Cancel");
   emit("closeModal", false);
 };
 
@@ -45,7 +44,6 @@ const getResult = async () => {
   result.dataURL = base64;
   result.blobURL = URL.createObjectURL(blob);
   result.file = file;
-  console.log("Cropped image is ready.", result, file);
   emit("closeModal", false);
   emit("result", result);
 };

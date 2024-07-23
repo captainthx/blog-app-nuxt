@@ -49,6 +49,8 @@ const items = [
     },
   ],
 ];
+const isOpenModal = ref<boolean>(false);
+const query = ref<string>("");
 </script>
 
 <template>
@@ -67,6 +69,33 @@ const items = [
         <UIcon :name="item.icon" />
         {{ item.label }}
       </ULink>
+    </div>
+    <div class="flex flex-col items-center">
+      <UIcon
+        class="cursor-pointer"
+        name="i-heroicons-magnifying-glass-20-solid"
+        @click="isOpenModal = !isOpenModal"
+      >
+      </UIcon>
+      <UModal v-model="isOpenModal">
+        <UCard
+          :ui="{
+            ring: '',
+            divide: 'divide-y divide-gray-100 dark:divide-gray-800',
+          }"
+        >
+          <template #header>
+            <div class="flex flex-row gap-5">
+              <UInput
+                class="w-full mx-auto"
+                type="text"
+                placeholder="Search..."
+              />
+            </div>
+          </template>
+          content
+        </UCard>
+      </UModal>
     </div>
     <div class="flex flex-row gap-2 mr-5">
       <UDropdown
