@@ -12,7 +12,7 @@ const login = (body: LoginRequest): ServerResponse<TokenResponse> =>
   client.post("/v1/auth/login", body);
 
 const signup = (body: SignupRequest): ServerResponse<TokenResponse> =>
-  client.post("/v1/auth/signup", body);
+  client.post("/v1/auth/sign-up", body);
 
 const refresh = (body: RefreshTokenRequest): ServerResponse<TokenResponse> =>
   client.post("/v1/auth/refresh", body);

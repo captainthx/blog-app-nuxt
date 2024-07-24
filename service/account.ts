@@ -10,6 +10,6 @@ const getProfile = (): ServerResponse<AccountResponse> =>
 
 const updateAccount = (
   body: UpdateAccountRequest
-): ServerResponse<AccountResponse> => client.patch("/v1/account", body);
+): ServerResponse<AccountResponse> => client.put("/v1/account", body);
 
 export { getProfile, updateAccount };
