@@ -1,5 +1,3 @@
-import { resolve } from "path";
-
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   app: {
@@ -19,7 +17,6 @@ export default defineNuxtConfig({
     "/forgot-password": { ssr: false },
     "/reset-password": { ssr: false },
   },
-
   modules: [
     "@nuxt/ui",
     "@pinia/nuxt",
@@ -51,8 +48,5 @@ export default defineNuxtConfig({
   },
   devtools: {
     enabled: true,
-    timeline: {
-      enabled: true,
-    },
   },
 });

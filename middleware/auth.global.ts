@@ -1,22 +1,20 @@
 import { useAuthStore } from "@/store/authStore";
 
-export default defineNuxtRouteMiddleware((to, from) => {
-  const pathList = ["/login", "/register", "/forgot-password"];
+export default defineNuxtRouteMiddleware((to, _from) => {
+  const allows = ["login", "register", "forgot-password", "index"];
+  const { isAuthenticated } = useAuthStore();
 
   console.log("Global middleware");
-
-  if (!pathList.includes(to.path)) {
-    const { isAuthenticated } = useAuthStore();
-    console.log("Checking if user is authenticated", isAuthenticated);
-    if (!isAuthenticated) {
-      console.log("Redirecting to login page");
-      return navigateTo("/login");
-    }
-  }
-
-  if (to.path === "/reset-password") {
-    if (to.query.token === undefined && to.query.username === undefined) {
-      return navigateTo("/forgot-password");
+  console.log("Current route:", to.name);
+  console.log("Is authenticated:", isAuthenticated);
+  if (isAuthenticated) {
+    to.meta.layout = "authenticated";
+    console.log("Authenticated layout");
+  } else {
+    to.meta.layout = "default";
+    if (!allows.includes(to.name as string)) {
+      console.log("Redirecting to login");
+      return navigateTo({ name: "login" });
     }
   }
 });
