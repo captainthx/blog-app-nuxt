@@ -4,20 +4,19 @@ import { AxiosError } from "axios";
 import { z } from "zod";
 import { getProfile, updateAccount } from "~/service/account";
 import { getFile, uploadFile } from "~/service/file";
-import type { AccountResponse } from "~/types";
+import { useProfileStore } from "~/store/profileStore";
+import type { AccountResponse, UpdateAccountRequest } from "~/types";
 
-const url = ref<string>("");
-const defaultImage =
-  "https://t4.ftcdn.net/jpg/01/64/16/59/360_F_164165971_ELxPPwdwHYEhg4vZ3F4Ej7OmZVzqq4Ov.jpg";
+const previewUrl = ref<string>("");
+const avatarUrl = ref<string>("");
+const defaultImage = import.meta.env.VITE_BASE_IMAGE;
 const inputRef = ref<HTMLInputElement | null>(null);
 const imageFile = ref<File | null>(null);
-const profile = ref<AccountResponse>({
-  id: 0,
-  username: "",
-  name: "",
-  mobile: "",
-  avatar: "",
-});
+const { profile, updateProfile } = useProfileStore() as {
+  profile: AccountResponse;
+  updateProfile: (profile: AccountResponse) => void;
+};
+const updateAccountRequest = reactive<UpdateAccountRequest>({});
 const isOpenModal = ref<boolean>(false);
 const toast = useToast();
 const schema = z.object({
@@ -27,6 +26,7 @@ const schema = z.object({
     .min(10, "Must be at least 10 characters")
     .max(10, "Must be at most 10 characters"),
 });
+const editImage = ref<boolean>(false);
 
 const handleUploadFile = async () => {
   if (imageFile.value) {
@@ -36,9 +36,12 @@ const handleUploadFile = async () => {
     try {
       const res = await uploadFile(formData);
       if (res.status === 200 && res.data.result) {
-        profile.value.avatar = res.data.result.imageName;
+        updateAccountRequest.avatar = res.data.result.imageName;
+        updateProfile({ ...profile, avatar: res.data.result.imageName });
+        avatarUrl.value = URL.createObjectURL(imageFile.value);
         imageFile.value = null;
-        handleUpadteAccout();
+        await handleUpadteAccout();
+        editImage.value = false;
       }
     } catch (error) {
       console.log(error);
@@ -48,16 +51,16 @@ const handleUploadFile = async () => {
 
 const handleUpadteAccout = async () => {
   try {
-    const res = await updateAccount(profile.value);
+    const res = await updateAccount(updateAccountRequest);
     if (res.status === 200 && res.data.result) {
-      console.log(res.data.result);
       toast.add({
         title: "Success",
         description: "Update Profile success",
         color: "green",
         timeout: 3000,
       });
-      await loadData();
+      updateProfile(res.data.result);
+      await getImage();
     }
   } catch (error) {
     if (error instanceof AxiosError) {
@@ -83,7 +86,7 @@ const changeFile = (event: Event) => {
   if (file) {
     const reader = new FileReader();
     reader.onload = (e) => {
-      url.value = e.target?.result as string;
+      previewUrl.value = e.target?.result as string;
       isOpenModal.value = true;
     };
     reader.readAsDataURL(file);
@@ -92,9 +95,9 @@ const changeFile = (event: Event) => {
 
 const getImage = async () => {
   try {
-    const res = await getFile(profile.value.avatar);
+    const res = await getFile(profile.avatar);
     if (res.status === 200 && res.data) {
-      url.value = URL.createObjectURL(res.data);
+      avatarUrl.value = URL.createObjectURL(res.data);
     }
   } catch (error) {
     console.log(error);
@@ -103,12 +106,13 @@ const getImage = async () => {
 const handleUndoCrop = () => {
   imageFile.value = null;
   getImage();
+  editImage.value = false;
 };
 const loadData = async () => {
   try {
     const res = await getProfile();
     if (res.status === 200 && res.data.result) {
-      profile.value = res.data.result;
+      updateProfile(res.data.result);
     }
   } catch (error) {
     console.log(error);
@@ -122,25 +126,41 @@ const updateCloseModal = (value: boolean) => {
   }
 };
 const resulCropSuccess = (result: any) => {
-  url.value = result.dataURL;
+  avatarUrl.value = result.dataURL;
+  previewUrl.value = result.dataURL;
   imageFile.value = result.file;
 };
+
+const handleShowEditImage = () => {
+  editImage.value = true;
+};
+
 onBeforeMount(async () => {
-  await loadData();
-  getImage();
+  await getImage();
+  if (profile) {
+    updateAccountRequest.name = profile.name;
+    updateAccountRequest.mobile = profile.mobile;
+  }
 });
 </script>
 
 <template>
-  <div
-    class="w-full h-[80dvh] flex flex-col items-center bg-gray-100 mx-auto p-5 mt-6"
-  >
-    <div>
-      <div>
+  <div class="h-[80dvh] flex items-center mt-6">
+    <div class="grid grid-cols-2 w-full h-full gap-5 p-2">
+      <div
+        class="flex flex-col justify-center items-center p-2 bg-gray-50 border-2 border-gray-100 rounded-xl dark:bg-transparent"
+      >
         <NuxtImg
+          v-if="editImage == false"
+          class="size-48 mt-2 rounded-full border-4 border-opacity-50 border-gray-200"
+          :src="avatarUrl ? avatarUrl : defaultImage"
+          alt="Avatar"
+        />
+        <NuxtImg
+          v-if="editImage == true"
           @click="triggerFileInput"
-          class="w-40 h-36 mt-2 rounded-full"
-          :src="url ? url : defaultImage"
+          class="size-48 mt-2 rounded-full"
+          :src="previewUrl ? previewUrl : defaultImage"
           alt="Avatar"
         />
         <input
@@ -150,54 +170,71 @@ onBeforeMount(async () => {
           type="file"
           @change="changeFile"
         />
-        <div class="flex justify-center gap-5 mt-5">
+        <div class="pt-10" v-show="!editImage">
           <UButton
-            v-show="imageFile"
+            class="hover:animate-bounce"
+            variant="ghost"
+            @click="handleShowEditImage"
+            >change profile</UButton
+          >
+        </div>
+        <div class="flex justify-center gap-5 mt-5" v-show="editImage == true">
+          <UButton
             icon="i-heroicons-arrow-uturn-left-solid"
+            size="xs"
             color="white"
             @click="handleUndoCrop"
           />
-          <UButton
-            v-show="imageFile"
-            color="blue"
-            variant="ghost"
-            @click="handleUploadFile"
+          <UButton color="blue" variant="ghost" @click="handleUploadFile"
             >confrim</UButton
           >
         </div>
-        <UModal v-model="isOpenModal" :overlay="false">
+        <UModal v-model="isOpenModal">
           <ACropImage
-            :urlImage="url"
+            :urlImage="previewUrl"
             @closeModal="updateCloseModal"
             @result="resulCropSuccess"
           />
         </UModal>
       </div>
-    </div>
-    <UForm
-      class="flex flex-col gap-5"
-      :schema="schema"
-      :state="profile"
-      @submit="handleUpadteAccout"
-    >
-      <UFormGroup label="username" name="username">
-        <UInput
-          type="text"
-          disabled
-          v-model="profile.username"
-          placeholder="username"
-        />
-      </UFormGroup>
-      <UFormGroup label="name" name="name">
-        <UInput type="text" v-model="profile.name" placeholder="name" />
-      </UFormGroup>
-      <UFormGroup label="mobile" name="mobile">
-        <UInput type="text" v-model="profile.mobile" placeholder="mobile" />
-      </UFormGroup>
-      <div class="flex justify-center gap-5 mt-5">
-        <UButton color="blue" type="submit">save</UButton>
+      <div
+        class="flex flex-col justify-center items-center bg-gray-50 border-2 border-gray-100 dark:bg-transparent rounded-xl"
+      >
+        <h1 class="text-2xl font-semibold">Profile detail</h1>
+        <UForm
+          class="flex flex-col gap-4 w-5/6"
+          :schema="schema"
+          :state="updateAccountRequest"
+          @submit="handleUpadteAccout"
+        >
+          <UFormGroup label="username" name="username">
+            <UInput
+              type="text"
+              v-model:value="profile.username"
+              disabled
+              placeholder="username"
+            />
+          </UFormGroup>
+          <UFormGroup label="name" name="name">
+            <UInput
+              type="text"
+              v-model="updateAccountRequest.name"
+              placeholder="name"
+            />
+          </UFormGroup>
+          <UFormGroup label="mobile" name="mobile">
+            <UInput
+              type="text"
+              v-model="updateAccountRequest.mobile"
+              placeholder="mobile"
+            />
+          </UFormGroup>
+          <div class="flex justify-center gap-5 mt-5">
+            <UButton color="blue" type="submit">save</UButton>
+          </div>
+        </UForm>
       </div>
-    </UForm>
+    </div>
   </div>
 </template>
 

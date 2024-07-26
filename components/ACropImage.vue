@@ -65,7 +65,7 @@ const getResult = async () => {
           :options="{
             viewMode: 1,
             dragMode: 'crop',
-            aspectRatio: 16 / 9,
+            aspectRatio: 1,
           }"
           @ready="ready"
         />

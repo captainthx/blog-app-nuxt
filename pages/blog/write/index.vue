@@ -47,6 +47,7 @@ const handleAddTag = () => {
     return;
   }
   body.tags.push(tag.value);
+  tag.value = "";
 };
 
 const handleUpdateContent = (value: string) => {
@@ -63,7 +64,7 @@ const handleCreatePost = async () => {
         description: "You have successfully created a post",
         timeout: 3000,
       });
-      // useRouter().push("/blog");
+      useRouter().push({ name: "index" });
     }
   } catch (error) {
     if (error instanceof AxiosError) {

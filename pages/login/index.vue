@@ -50,7 +50,7 @@ const handleLogin = async () => {
         description: "You have successfully logged in",
         timeout: 3000,
       });
-      useRouter().push("/");
+      useRouter().push({ name: "index" });
     }
   } catch (error) {
     if (error instanceof AxiosError) {
@@ -79,7 +79,7 @@ const handleRegister = async () => {
         description: "You have successfully tegister",
         timeout: 3000,
       });
-      useRouter().push("/");
+      useRouter().push({ name: "index" });
     }
   } catch (error) {
     if (error instanceof AxiosError) {

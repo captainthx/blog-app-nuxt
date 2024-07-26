@@ -1,18 +1,20 @@
 <script setup lang="ts">
 import { useAuthStore } from "~/store/authStore";
+import { useProfileStore } from "~/store/profileStore";
 
 const { logout } = useAuthStore();
+const { removeProfile } = useProfileStore();
 const router = useRouter();
 const links = [
   {
     label: "Home",
     icon: "i-heroicons-home",
-    to: "/",
+    to: "index",
   },
   {
     label: "Blog",
     icon: "i-heroicons-pencil-square-20-solid",
-    to: "/blog/write",
+    to: "blog-write",
   },
 ];
 
@@ -24,7 +26,7 @@ const items = [
         src: "https://avatars.githubusercontent.com/u/739984?v=4",
       },
       click: () => {
-        router.push("/profile");
+        router.push({ name: "profile" });
       },
     },
   ],
@@ -33,7 +35,7 @@ const items = [
       label: "Write",
       icon: "i-heroicons-pencil-square-20-solid",
       click: () => {
-        router.push("/blog/write");
+        router.push({ name: "blog-write" });
       },
     },
   ],
@@ -43,27 +45,37 @@ const items = [
       icon: "i-heroicons-arrow-right-start-on-rectangle-solid",
       click: () => {
         logout();
-        router.push("/login");
+        removeProfile();
+        router.push({ name: "login" });
       },
     },
   ],
 ];
 const isOpenModal = ref<boolean>(false);
 const query = ref<string>("");
+const colorMode = useColorMode();
+const isDark = computed({
+  get() {
+    return colorMode.value === "dark";
+  },
+  set() {
+    colorMode.preference = colorMode.value === "dark" ? "light" : "dark";
+  },
+});
 </script>
 
 <template>
   <div
-    class="fixed w-full top-0 p-3 items-center h-10 flex flex-row justify-between bg-white/30 bg-opacity-60 border-b-2"
+    class="fixed w-full top-0 p-3 bg-transparent items-center max-h-10 flex flex-row justify-between bg-opacity-60 border-b-2"
   >
     <div class="flex flex-row gap-4">
       <ULink
         class="flex items-center gap-2"
         v-for="item in links"
         :key="item.label"
-        :to="item.to"
+        :to="{ name: item.to }"
         active-class="text-primary"
-        inactive-class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+        inactive-class="text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-200"
       >
         <UIcon :name="item.icon" />
         {{ item.label }}
@@ -96,7 +108,21 @@ const query = ref<string>("");
         </UCard>
       </UModal>
     </div>
-    <div class="flex flex-row gap-2 mr-5">
+    <div class="flex flex-row gap-2 mr-5 items-center">
+      <div>
+        <ClientOnly>
+          <UButton
+            class="hover:bg-opacity-0 dark:hover:bg-opacity-0"
+            :icon="
+              isDark ? 'i-heroicons-moon-20-solid' : 'i-heroicons-sun-20-solid'
+            "
+            color="gray"
+            variant="ghost"
+            aria-label="Theme"
+            @click="isDark = !isDark"
+          />
+        </ClientOnly>
+      </div>
       <UDropdown :items="items" :popper="{ placement: 'bottom-start' }">
         <UIcon name="i-heroicons-user" />
       </UDropdown>

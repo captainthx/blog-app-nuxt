@@ -12,7 +12,7 @@ const randomColor = () => {
 </script>
 
 <template>
-  <div class="overflow-hidden rounded-lg bg-white shadow-lg" v-if="blog">
+  <div class="overflow-hidden rounded-lg bg-transparent shadow-lg" v-if="blog">
     <!-- <img
       src="https://images.unsplash.com/photo-1552581234-26160f608093?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1000&q=80"
       class="aspect-video w-full object-cover"
@@ -24,16 +24,19 @@ const randomColor = () => {
         : {{ formatDate(blog.cdt) }}
       </p>
       <!-- title -->
-      <h3 class="text-xl font-medium text-gray-900">
+      <h3 class="text-xl font-medium text-gray-600 dark:text-gray-300">
         {{ blog.title }}
       </h3>
       <!--content-->
-      <p v-html="blog.content" class="mt-1 text-gray-500 truncate"></p>
+      <p
+        v-html="blog.content"
+        class="mt-1 text-gray-500 truncate dark:text-gray-300"
+      ></p>
       <div class="flex justify-end mt-4">
         <ULink
           :to="`/blog/${blog.id}`"
           active-class="text-primary"
-          inactive-class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+          inactive-class="text-blue-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-blue-500"
           >read more</ULink
         >
       </div>

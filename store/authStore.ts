@@ -7,9 +7,7 @@ import type { ApiResponse, TokenPayload, TokenResponse } from "~/types";
 export const useAuthStore = defineStore("auth", () => {
   const token = ref<TokenResponse | null>(null);
   const payload = ref<TokenPayload | null>(null);
-  const isAuthenticated = computed(
-    () => token.value !== null && payload.value !== null
-  );
+  const isAuthenticated = computed(() => !!token.value);
   const cookie = useCookie<TokenResponse | null>("auth");
 
   const transfer = (res: AxiosResponse<ApiResponse<TokenResponse>>) => {
@@ -20,36 +18,28 @@ export const useAuthStore = defineStore("auth", () => {
     }
   };
 
-  const loadAuth = () => {
+  const loadAuth = async () => {
     console.log("Loading auth");
     if (cookie.value) {
       token.value = cookie.value;
       payload.value = JSON.parse(atob(token.value.accessToken.split(".")[1]));
       if (payload.value) {
         const timeout = (payload.value.exp - Date.now() / 1000) * 1000;
-        console.log("Token expires in", timeout, "ms");
-        console.log(
-          "Refresh expires in",
-          (token.value.refreshExpire - Date.now() / 1000) * 1000,
-          "ms"
-        );
         if (timeout < 0) {
           console.log("Token expired");
           if ((token.value.refreshExpire - Date.now() / 1000) * 1000 > 0) {
             console.log("Refresh token not expired");
-            refreshAuth(token.value.refreshToken);
+            await refreshAuth(token.value.refreshToken);
           } else {
             console.log("Refresh token expired");
             logout();
           }
         } else if (timeout > 1) {
           const refresh = token.value.refreshToken;
-          if (import.meta.client) {
-            setTimeout(() => {
-              console.log("settime out Refreshing auth", new Date());
-              refreshAuth(refresh);
-            }, timeout);
-          }
+          setTimeout(async () => {
+            console.log("settime out Refreshing auth", new Date());
+            await refreshAuth(refresh);
+          }, timeout);
           client.interceptors.request.use(
             (config) => {
               if (token.value) {
@@ -86,6 +76,7 @@ export const useAuthStore = defineStore("auth", () => {
   };
 
   const logout = () => {
+    console.log("Logging out");
     token.value = null;
     payload.value = null;
     cookie.value = null;

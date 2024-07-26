@@ -1,6 +1,4 @@
-<script lang="ts" setup>
-import ANavbarAuth from "~/components/ANavbarAuth.vue";
-</script>
+<script lang="ts" setup></script>
 .
 <template>
   <ALoadingBar :duration="10000" />
@@ -10,3 +8,8 @@ import ANavbarAuth from "~/components/ANavbarAuth.vue";
     <NuxtPage />
   </UContainer>
 </template>
+<style scoped>
+body {
+  font-family: Roboto, sans-serif;
+}
+</style>

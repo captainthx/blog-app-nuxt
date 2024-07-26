@@ -1,6 +1,7 @@
 import type { ServerResponse, UploadFileResponse } from "~/types";
-import client from "./request";
+import { create } from "./request";
 
+const client = create();
 const uploadFile = (formData: FormData): ServerResponse<UploadFileResponse> =>
   client.post("/v1/upload", formData, {
     headers: { "Content-Type": "multipart/form-data" },
