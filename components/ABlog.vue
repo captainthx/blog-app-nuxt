@@ -16,11 +16,22 @@ const randomColor = () => {
     <!-- <img
       src="https://images.unsplash.com/photo-1552581234-26160f608093?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1000&q=80"
       class="aspect-video w-full object-cover"
-      alt=""
+      alt="alt"
     /> -->
+    <div class="flex justify-center">
+      <NuxtImg
+        class="w-2/4 h-full"
+        src="https://images.unsplash.com/photo-1552581234-26160f608093?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1000&q=80"
+        alt="alt"
+      />
+    </div>
     <div class="p-4">
       <p class="mb-1 text-sm text-green-500">
-        <span> {{ blog.author.username.toUpperCase() }}</span>
+        <span>
+          {{
+            blog.author ? blog.author.username.toUpperCase() : "Init post"
+          }}</span
+        >
         : {{ formatDate(blog.cdt) }}
       </p>
       <!-- title -->
@@ -46,7 +57,7 @@ const randomColor = () => {
           <span
             v-for="tag in blog.tags"
             :key="tag"
-            :class="`inline-flex items-center gap-1 rounded-full bg-${randomColor()}-50 px-2 py-1 text-base font-semibold text-${randomColor()}-600`"
+            :class="`inline-flex items-center gap-1 rounded-full bg-${randomColor()}-100 px-2 py-1 text-base font-semibold text-${randomColor()}-600`"
             >{{ tag }}</span
           >
         </div>

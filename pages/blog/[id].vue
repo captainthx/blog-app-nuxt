@@ -145,7 +145,7 @@ onMounted(async () => {
       <div class="flex flex-col">
         <div class="flex justify-start gap-5 items-center align-middle">
           <UAvatar src="https://avatars.githubusercontent.com/u/739984?v=4" />
-          <div>{{ blog.author.name }}</div>
+          <div>{{ blog.author ? blog.author.name : "Init post" }}</div>
         </div>
         <div class="mt-2 p-1">
           <p>{{ formatDate(blog.cdt) }}</p>
