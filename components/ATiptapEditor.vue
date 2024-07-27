@@ -63,7 +63,7 @@ const editor = useEditor({
   editorProps: {
     attributes: {
       class:
-        "h-64 overflow-auto focus:outline-none border-2 rounded-md p-4 shadow-sm ",
+        "h-52 overflow-auto focus:outline-none border-2 rounded-md p-4 shadow-sm ",
     },
   },
   content: props.value,

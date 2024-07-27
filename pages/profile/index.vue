@@ -108,16 +108,6 @@ const handleUndoCrop = () => {
   getImage();
   editImage.value = false;
 };
-const loadData = async () => {
-  try {
-    const res = await getProfile();
-    if (res.status === 200 && res.data.result) {
-      updateProfile(res.data.result);
-    }
-  } catch (error) {
-    console.log(error);
-  }
-};
 
 const updateCloseModal = (value: boolean) => {
   isOpenModal.value = value;

@@ -112,6 +112,7 @@ export interface ResetPasswordRequest {
 }
 
 export interface CreatePostRequest {
+  postImage: string;
   title: string;
   content: string;
   status: string;

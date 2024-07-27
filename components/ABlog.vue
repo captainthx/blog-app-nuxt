@@ -13,14 +13,9 @@ const randomColor = () => {
 
 <template>
   <div class="overflow-hidden rounded-lg bg-transparent shadow-lg" v-if="blog">
-    <!-- <img
-      src="https://images.unsplash.com/photo-1552581234-26160f608093?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1000&q=80"
-      class="aspect-video w-full object-cover"
-      alt="alt"
-    /> -->
     <div class="flex justify-center">
       <NuxtImg
-        class="w-2/4 h-full"
+        class=""
         src="https://images.unsplash.com/photo-1552581234-26160f608093?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1000&q=80"
         alt="alt"
       />
