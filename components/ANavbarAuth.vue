@@ -1,9 +1,15 @@
 <script setup lang="ts">
+import { getFile } from "~/service/file";
 import { useAuthStore } from "~/store/authStore";
 import { useProfileStore } from "~/store/profileStore";
+import type { AccountResponse } from "~/types";
 
 const { logout } = useAuthStore();
-const { removeProfile } = useProfileStore();
+const { removeProfile, profile } = useProfileStore() as {
+  profile: AccountResponse;
+  removeProfile: () => void;
+};
+const avatarUrl = ref<string>("");
 const router = useRouter();
 const links = [
   {
@@ -22,9 +28,7 @@ const items = [
   [
     {
       label: "Profile",
-      avatar: {
-        src: "https://avatars.githubusercontent.com/u/739984?v=4",
-      },
+      slot: "profile",
       click: () => {
         router.push({ name: "profile" });
       },
@@ -61,6 +65,19 @@ const isDark = computed({
   set() {
     colorMode.preference = colorMode.value === "dark" ? "light" : "dark";
   },
+});
+
+const loadAvatar = async () => {
+  if (profile) {
+    const res = await getFile(profile.avatar);
+    avatarUrl.value = URL.createObjectURL(res.data);
+  }
+};
+
+onBeforeMount(async () => {
+  if (profile) {
+    await loadAvatar();
+  }
 });
 </script>
 
@@ -125,6 +142,12 @@ const isDark = computed({
       </div>
       <UDropdown :items="items" :popper="{ placement: 'bottom-start' }">
         <UIcon name="i-heroicons-user" />
+        <template #profile="{ item }">
+          <div class="flex justify-center gap-2 items-center">
+            <UAvatar :src="avatarUrl" size="xs" alt="avatar" />
+            {{ item.label }}
+          </div>
+        </template>
       </UDropdown>
     </div>
   </div>

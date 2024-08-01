@@ -10,11 +10,11 @@ export const useAuthStore = defineStore("auth", () => {
   const isAuthenticated = computed(() => !!token.value);
   const cookie = useCookie<TokenResponse | null>("auth");
 
-  const transfer = (res: AxiosResponse<ApiResponse<TokenResponse>>) => {
+  const transfer = async (data: TokenResponse) => {
     console.log("Transferring auth");
-    if (res.status === 200 && res.data.code === 200) {
-      cookie.value = res.data.result;
-      loadAuth();
+    if (data) {
+      cookie.value = data;
+      await loadAuth();
     }
   };
 
@@ -64,7 +64,7 @@ export const useAuthStore = defineStore("auth", () => {
       const res = await refresh({ token });
       if (res.data.code === 200) {
         if (res.data.result) {
-          transfer(res);
+          await transfer(res.data.result);
         }
       }
       if (res.status !== 200) {

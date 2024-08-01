@@ -2,6 +2,7 @@
 import { AxiosError } from "axios";
 import { login, signup } from "~/service/auth";
 import { useAuthStore } from "~/store/authStore";
+import { useProfileStore } from "~/store/profileStore";
 
 useHead({
   title: "Login",
@@ -23,7 +24,9 @@ const items = [
     label: "Signup",
   },
 ];
+const router = useRouter();
 const { transfer } = useAuthStore();
+const { loadProfile } = useProfileStore();
 const loginForm = reactive({
   username: "",
   password: "",
@@ -44,13 +47,14 @@ const handleLogin = async () => {
     const res = await login(loginForm);
     if (res.status === 200 && res.data.code === 200) {
       state.submit = false;
-      transfer(res);
+      await transfer(res.data.result);
+      await loadProfile();
+      router.push({ name: "index" });
       toast.add({
         title: "Login success",
         description: "You have successfully logged in",
         timeout: 3000,
       });
-      useRouter().push({ name: "index" });
     }
   } catch (error) {
     if (error instanceof AxiosError) {
@@ -73,13 +77,14 @@ const handleRegister = async () => {
     const res = await signup(registerForm);
     if (res.status === 200 && res.data.code === 200) {
       state.submit = false;
-      transfer(res);
+      await transfer(res.data.result);
+      await loadProfile();
+      router.push({ name: "index" });
       toast.add({
         title: "Register success",
         description: "You have successfully tegister",
         timeout: 3000,
       });
-      useRouter().push({ name: "index" });
     }
   } catch (error) {
     if (error instanceof AxiosError) {
