@@ -60,6 +60,7 @@ export interface PostResponse {
   content: string;
   status: string;
   likeCount: number;
+  postImage: string;
   comments: CommentResponse[];
   tags: string[];
   author: AccountResponse;

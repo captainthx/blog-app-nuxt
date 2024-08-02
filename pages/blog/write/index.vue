@@ -1,7 +1,10 @@
 <script setup lang="ts">
-import { AxiosError } from "axios";
-import { getFile } from "~/service/file";
+import { z } from "zod";
+import { getFile, uploadFile } from "~/service/file";
 import { createPost } from "~/service/post";
+import { showToastError, showToastSuccess } from "~/utils/notification";
+import { handleAxiosError, handleZodError } from "~/utils/handleError";
+import { AxiosError } from "axios";
 
 const postStatus = [
   {
@@ -13,37 +16,43 @@ const postStatus = [
     value: "private",
   },
 ];
-const content = ref<string>("");
-const tagsList = ref<string[]>([]);
+const previewImage = ref<string>("");
+const defaultImage = import.meta.env.VITE_BASE_IMAGE;
+const inputRef = ref<HTMLInputElement | null>(null);
 const tag = ref<string>("");
-const toast = useToast();
-const body = reactive({
+const imageFile = ref<File | null>(null);
+
+const schema = z.object({
+  title: z.string().min(6, "Titel Must be at least 10 characters"),
+  content: z.string().min(10, "Content Must be at least 10 characters"),
+  tags: z
+    .array(z.string())
+    .min(1, "At least one tag is required")
+    .max(6, "Maximum 6 tags allowed"),
+  status: z.enum(["publish", "private"]).default("publish"),
+  postImage: z.string().min(1, "Post image is required"),
+});
+type CreatePostRequest = z.infer<typeof schema>;
+
+const body = reactive<CreatePostRequest>({
+  postImage: "",
   title: "",
-  tags: [] as string[],
+  tags: [],
   content: "",
   status: "publish",
 });
 
 const removeTag = (tag: string) => {
-  const tagIndex = tagsList.value.findIndex((t) => t === tag);
+  const tagIndex = body.tags.findIndex((t) => t === tag);
   body.tags.splice(tagIndex, 1);
 };
 const handleAddTag = () => {
   if (tag.value === "") {
-    toast.add({
-      title: "Tag is empty",
-      description: "Please enter a tag",
-      timeout: 3000,
-      color: "red",
-    });
+    showToastError("Tag is empty", "Please enter a tag");
+    return;
   }
   if (body.tags.length === 6) {
-    toast.add({
-      title: "Tag limit reached",
-      description: "You can only add up to 6 tags",
-      timeout: 3000,
-      color: "red",
-    });
+    showToastError("Tag limit reached", "You can only add up to 6 tags");
     return;
   }
   body.tags.push(tag.value);
@@ -55,28 +64,65 @@ const handleUpdateContent = (value: string) => {
 };
 
 const handleCreatePost = async () => {
+  await handleUploadFile();
   try {
-    const res = await createPost(body);
+    const validate = schema.parse(body);
+    const postData: Omit<CreatePostRequest, "postImage"> & {
+      postImage: string;
+    } = {
+      ...validate,
+      postImage: validate.postImage,
+    };
+    const res = await createPost(postData);
     if (res.status === 200 && res.data.code === 200) {
-      toast.add({
-        title: "Create post success",
-        description: "You have successfully created a post",
-        timeout: 3000,
-      });
+      showToastSuccess(
+        "Create post success",
+        "You have successfully created a post"
+      );
       useRouter().push({ name: "index" });
     }
   } catch (error) {
-    if (error instanceof AxiosError) {
-      const axiosError = error as AxiosError;
-      const responseData = axiosError.response?.data as { message: string };
-      toast.add({
-        title: "Create post failed",
-        description: responseData.message,
-        timeout: 3000,
-        color: "red",
-      });
+    if (error instanceof z.ZodError) {
+      handleZodError(error);
+    } else if (error instanceof AxiosError) {
+      handleAxiosError("Create post", error);
     }
   }
+};
+
+const changeFile = (event: Event) => {
+  const file = (event.target as HTMLInputElement).files?.item(0);
+  if (file) {
+    imageFile.value = file;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      previewImage.value = e.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  }
+};
+
+const handleUploadFile = async () => {
+  if (imageFile.value) {
+    const formData = new FormData();
+    formData.append("file", imageFile.value);
+    formData.append("compress", "true");
+    try {
+      const res = await uploadFile(formData);
+      if (res.status === 200 && res.data.result) {
+        body.postImage = res.data.result.imageName;
+      }
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        handleAxiosError("Upload post image", error);
+      }
+    }
+  }
+};
+
+const handleCancel = () => {
+  previewImage.value = "";
+  imageFile.value = null;
 };
 </script>
 
@@ -85,8 +131,16 @@ const handleCreatePost = async () => {
     <div class="flex flex-col justify-center items-center">
       <p class="text-2xl">Create post</p>
       <NuxtImg
-        class="w-1/5 p-2"
-        src="https://images.unsplash.com/photo-1552581234-26160f608093?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1000&q=80"
+        @click="inputRef?.click()"
+        class="p-2 size-40"
+        :src="previewImage ? previewImage : defaultImage"
+      />
+      <input
+        hidden
+        ref="inputRef"
+        accept="image/*"
+        type="file"
+        @change="changeFile"
       />
       <div class="w-full flex flex-row justify-center items-center">
         <UInput
@@ -142,24 +196,17 @@ const handleCreatePost = async () => {
 
       <div class="flex flex-col mt-2">
         <ATiptapEditor
-          :value="content"
+          :value="body.content"
           :mode="'editor'"
           @update:value="handleUpdateContent"
         />
-        <div class="flex justify-end mb-1 2xl:mb-10 2xl:mt-5">
-          <UButton @click="handleCreatePost">write</UButton>
+        <div class="flex justify-end mb-2 mt-2 gap-2">
+          <UButton variant="ghost" @click="handleCancel">cancel</UButton>
+          <UButton variant="ghost" @click="handleCreatePost">write</UButton>
         </div>
       </div>
     </div>
   </div>
 </template>
 
-<style scoped>
-@media screen and (min-width: 2300px) {
-  .custom-responsive {
-    /* Add your custom styles here */
-    background-color: lightblue;
-    padding: 20px;
-  }
-}
-</style>
+<style scoped></style>

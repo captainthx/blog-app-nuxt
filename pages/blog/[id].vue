@@ -1,17 +1,21 @@
 <script setup lang="ts">
 import { AxiosError } from "axios";
 import { faveritePost } from "~/service/favoritePost";
+import { getFile } from "~/service/file";
 import { getPostByid, likePost } from "~/service/post";
 import { useAuthStore } from "~/store/authStore";
+import { useProfileStore } from "~/store/profileStore";
 import type { PostResponse } from "~/types";
 
 const route = useRoute();
 const authStore = useAuthStore();
+const { profile } = useProfileStore();
 const postId = route.params.id;
 const blog = ref<PostResponse | null>(null);
 const toast = useToast();
 const isComment = ref<boolean>(false);
 const isOpen = ref<boolean>(false);
+const avatarImage = ref<string>("");
 
 useHead({
   title: "Blog",
@@ -115,7 +119,7 @@ const handleFavoritePost = async () => {
       const axiosError = error as AxiosError;
       const responseData = axiosError.response?.data as { message: string };
       toast.add({
-        title: "favorite post failed",
+        title: "",
         description: responseData.message,
         color: "red",
         timeout: 3000,
@@ -128,6 +132,17 @@ const updateCommet = (value: string) => {
   commentStatus.value = value;
 };
 
+const getAvatarImage = async () => {
+  try {
+    if (profile) {
+      const res = await getFile(profile.avatar);
+      if (res.status === 200 && res.data) {
+        avatarImage.value = URL.createObjectURL(res.data);
+      }
+    }
+  } catch (error) {}
+};
+
 watchEffect(() => {
   if (commentStatus.value === "success") {
     loadData();
@@ -135,6 +150,9 @@ watchEffect(() => {
 });
 onMounted(async () => {
   await loadData();
+  if (blog.value?.author.username) {
+    await getAvatarImage();
+  }
 });
 </script>
 
@@ -144,7 +162,13 @@ onMounted(async () => {
     <div class="flex flex-rows justify-between items-center align-middle p-2">
       <div class="flex flex-col">
         <div class="flex justify-start gap-5 items-center align-middle">
-          <UAvatar src="https://avatars.githubusercontent.com/u/739984?v=4" />
+          <UAvatar
+            :src="
+              avatarImage
+                ? avatarImage
+                : 'https://avatars.githubusercontent.com/u/739984?v=4'
+            "
+          />
           <div>{{ blog.author ? blog.author.name : "Init post" }}</div>
         </div>
         <div class="mt-2 p-1">

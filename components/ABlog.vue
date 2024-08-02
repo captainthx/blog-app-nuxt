@@ -1,22 +1,50 @@
 <script setup lang="ts">
 import type { PostResponse } from "~/types";
 import { formatDate } from "#imports";
-defineProps({
+import { AxiosError } from "axios";
+import { getFile } from "~/service/file";
+const props = defineProps({
   blog: Object as PropType<PostResponse>,
 });
+
+const postImage = ref<string>("");
+const defaultImage =
+  "https://images.unsplash.com/photo-1552581234-26160f608093?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1000&q=80";
 
 const randomColor = () => {
   const colors = ["red", "yellow", "green", "blue", "indigo", "purple", "pink"];
   return colors[Math.floor(Math.random() * colors.length)];
 };
+
+const getImage = async () => {
+  try {
+    if (props.blog) {
+      const res = await getFile(props.blog.postImage);
+      if (res.status === 200 && res.data) {
+        postImage.value = URL.createObjectURL(res.data);
+      }
+    }
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      console.log("error get image", error);
+    }
+  }
+};
+
+onBeforeMount(async () => {
+  await getImage();
+});
 </script>
 
 <template>
-  <div class="overflow-hidden rounded-lg bg-transparent shadow-lg" v-if="blog">
+  <div
+    class="overflow-hidden rounded-lg bg-transparent shadow-lg mt-5"
+    v-if="blog"
+  >
     <div class="flex justify-center">
       <NuxtImg
-        class=""
-        src="https://images.unsplash.com/photo-1552581234-26160f608093?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1000&q=80"
+        class="w-[500px] h-[281px] aspect-video mt-2 p-2"
+        :src="postImage ? postImage : defaultImage"
         alt="alt"
       />
     </div>
