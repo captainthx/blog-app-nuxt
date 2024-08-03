@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { AxiosError } from "axios";
-import { commentPost } from "~/service/comment";
-import type { CommentPostRequest, PostResponse } from "~/types";
+import { commentPost, getCommentByPostId } from "~/service/comment";
+import type { CommentPostRequest, CommentResponse } from "~/types";
 
 const props = defineProps({
-  data: {
-    type: Object as PropType<PostResponse>,
+  postId: {
+    type: Number,
+    required: true,
   },
   openComment: {
     type: Boolean,
@@ -13,50 +14,53 @@ const props = defineProps({
   },
 });
 const emit = defineEmits(["updateComment", "openComment"]);
-const toast = useToast();
 const commentRequest = reactive<CommentPostRequest>({
-  postId: props.data?.id || 0,
+  postId: props.postId,
   comment: "",
 });
+const commentData = ref<CommentResponse[] | null>(null);
 
 const handleComment = async () => {
   try {
     if (commentRequest.comment.length < 1) {
-      toast.add({
-        title: "Comment post failed",
-        description: "comment is empty",
-        color: "red",
-        timeout: 3000,
-      });
+      showToastError("Comment post failed", "comment is empty");
       return;
     }
     const res = await commentPost(commentRequest);
     if (res.status === 200 && res.data.message === "success") {
-      toast.add({
-        title: "You comment this post",
-        description: res.data.message,
-        color: "green",
-        timeout: 3000,
-      });
-      emit("updateComment", res.data.message);
+      showToastSuccess("Comment post success", "You comment this post");
+      // reset comment
+      commentRequest.comment = "";
+      await loadComment();
     }
   } catch (error) {
     if (error instanceof AxiosError) {
-      const axiosError = error as AxiosError;
-      const responseData = axiosError.response?.data as { message: string };
-      console.log("error ", responseData.message);
-      toast.add({
-        title: "Comment post failed",
-        description: responseData.message,
-        color: "red",
-        timeout: 3000,
-      });
+      handleAxiosError("Comment post failed", error);
     }
   }
 };
 const updateComment = (value: string) => {
   commentRequest.comment = value;
 };
+
+const loadComment = async () => {
+  try {
+    const res = await getCommentByPostId(props.postId);
+    if (res.status === 200 && res.data.result) {
+      commentData.value = res.data.result;
+    }
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      handleAxiosError("Get comment failed", error);
+    }
+  }
+};
+
+onBeforeMount(async () => {
+  if (props.postId) {
+    await loadComment();
+  }
+});
 </script>
 
 <template>
@@ -70,7 +74,7 @@ const updateComment = (value: string) => {
     </div>
 
     <div class="max-h-[50dvh] overflow-y-auto">
-      <div v-for="comment in props.data?.comments" :key="comment.id">
+      <div v-for="comment in commentData" :key="comment.cdt">
         <div class="flex flex-col gap-2 mb-4">
           <div class="flex justify-start gap-2 items-center">
             <UAvatar src="https://avatars.githubusercontent.com/u/739984?v=4" />
@@ -82,6 +86,12 @@ const updateComment = (value: string) => {
           <UDivider class="mb-2 w-full" />
         </div>
       </div>
+    </div>
+    <div
+      class="text-center opacity-50"
+      v-if="!commentData || commentData.length === 0"
+    >
+      <p>be the first to comment</p>
     </div>
   </div>
 </template>

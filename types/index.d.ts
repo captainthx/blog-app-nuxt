@@ -77,7 +77,6 @@ export interface AccountResponse {
 }
 
 export interface CommentResponse {
-  id: number;
   account: AccountResponse;
   comment: string;
   cdt: number;

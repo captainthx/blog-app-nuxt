@@ -8,10 +8,9 @@ export const handleZodError = (error: unknown) => {
   });
 };
 
-export const handleAxiosError = (title: string, error: unknown) => {
-  const axiosError = error as AxiosError;
-  if (axiosError.response) {
-    const responseData = axiosError.response.data as { error: string };
+export const handleAxiosError = (title: string, error: AxiosError) => {
+  if (error.response) {
+    const responseData = error.response.data as { error: string };
     showToastError(title, responseData.error);
   }
 };

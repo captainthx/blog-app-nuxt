@@ -7,16 +7,6 @@ import { useAuthStore } from "~/store/authStore";
 import { useProfileStore } from "~/store/profileStore";
 import type { PostResponse } from "~/types";
 
-const route = useRoute();
-const authStore = useAuthStore();
-const { profile } = useProfileStore();
-const postId = route.params.id;
-const blog = ref<PostResponse | null>(null);
-const toast = useToast();
-const isComment = ref<boolean>(false);
-const isOpen = ref<boolean>(false);
-const avatarImage = ref<string>("");
-
 useHead({
   title: "Blog",
   meta: [
@@ -27,10 +17,18 @@ useHead({
   ],
 });
 
+const route = useRoute();
+const authStore = useAuthStore();
+const { profile } = useProfileStore();
+const postId = route.params.id;
+const blog = ref<PostResponse | null>(null);
+const toast = useToast();
+const isComment = ref<boolean>(false);
+const avatarImage = ref<string>("");
+
 const openCommentfield = () => {
   isComment.value = !isComment.value;
 };
-const commentStatus = ref<string>("");
 
 const loadData = async () => {
   try {
@@ -128,10 +126,6 @@ const handleFavoritePost = async () => {
   }
 };
 
-const updateCommet = (value: string) => {
-  commentStatus.value = value;
-};
-
 const getAvatarImage = async () => {
   try {
     if (profile) {
@@ -143,14 +137,9 @@ const getAvatarImage = async () => {
   } catch (error) {}
 };
 
-watchEffect(() => {
-  if (commentStatus.value === "success") {
-    loadData();
-  }
-});
 onMounted(async () => {
   await loadData();
-  if (blog.value?.author.username) {
+  if (blog.value && blog.value.author) {
     await getAvatarImage();
   }
 });
@@ -208,21 +197,14 @@ onMounted(async () => {
       </div>
     </div>
     <div>
-      <UCard>
+      <UCard class="h-[50dvh] overflow-auto text-pretty">
         <div v-html="blog.content"></div>
       </UCard>
     </div>
     <ClientOnly>
       <USlideover v-model="isComment">
-        <AComment
-          :data="blog"
-          :open-comment="isComment"
-          @update-comment="updateCommet"
-        />
+        <AComment :post-id="blog.id" :open-comment="isComment" />
       </USlideover>
-      <div v-if="!blog.comments" class="text-center">
-        <p>no have comment...</p>
-      </div>
     </ClientOnly>
   </div>
 </template>

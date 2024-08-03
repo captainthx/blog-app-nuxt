@@ -38,7 +38,7 @@ onBeforeMount(async () => {
 
 <template>
   <div
-    class="overflow-hidden rounded-lg bg-transparent shadow-lg mt-5"
+    class="overflow-hidden rounded-lg border-t-2 shadow-lg mt-5 bg-white dark:bg-transparent"
     v-if="blog"
   >
     <div class="flex justify-center">
