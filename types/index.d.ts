@@ -134,3 +134,13 @@ export interface UpdateAccountRequest {
   name?: string;
   avatar?: string;
 }
+
+export interface FavoritePostResponse {
+  id: number;
+  post: PostFavoriteResponse;
+}
+export interface PostFavoriteResponse {
+  id: number;
+  title: string;
+  content: string;
+}

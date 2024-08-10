@@ -129,7 +129,7 @@ const handleCancel = () => {
 <template>
   <div class="w-full mx-auto h-[80dvh] mt-">
     <div class="flex flex-col justify-center items-center">
-      <p class="text-2xl">Create post</p>
+      <p class="text-center font-semibold text-2xl text-pretty">Create post</p>
       <NuxtImg
         @click="inputRef?.click()"
         class="p-2 size-40"

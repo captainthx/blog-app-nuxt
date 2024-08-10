@@ -36,6 +36,15 @@ const items = [
   ],
   [
     {
+      label: "Favorite",
+      icon: "i-heroicons-bookmark-20-solid",
+      click: () => {
+        router.push({ name: "favorire" });
+      },
+    },
+  ],
+  [
+    {
       label: "Write",
       icon: "i-heroicons-pencil-square-20-solid",
       click: () => {
@@ -74,9 +83,9 @@ const loadAvatar = async () => {
   }
 };
 
-onBeforeMount(async () => {
+onBeforeMount(() => {
   if (profile) {
-    await loadAvatar();
+    loadAvatar();
   }
 });
 </script>
@@ -99,12 +108,12 @@ onBeforeMount(async () => {
       </ULink>
     </div>
     <div class="flex flex-col items-center">
-      <UIcon
+      <!-- <UIcon
         class="cursor-pointer"
         name="i-heroicons-magnifying-glass-20-solid"
         @click="isOpenModal = !isOpenModal"
-      >
-      </UIcon>
+      > -->
+      <!-- </UIcon> -->
       <UModal v-model="isOpenModal">
         <UCard
           :ui="{

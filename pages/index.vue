@@ -50,7 +50,7 @@ onMounted(() => {
 <template>
   <ASpinner v-if="isLoading" />
   <div v-else class="flex flex-col gap-5">
-    <p class="text-pretty font-semibold text-3xl">All Post</p>
+    <p class="text-pretty font-semibold text-2xl">All Post</p>
     <div
       v-if="postList?.length"
       class="w-full grid gap-4"

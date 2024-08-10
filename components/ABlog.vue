@@ -31,8 +31,8 @@ const getImage = async () => {
   }
 };
 
-onBeforeMount(async () => {
-  await getImage();
+onBeforeMount(() => {
+  getImage();
 });
 </script>
 
