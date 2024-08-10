@@ -83,6 +83,7 @@ export interface CommentResponse {
 }
 
 export interface Pagination {
+  sort?: string;
   page?: number;
   size?: number;
 }
