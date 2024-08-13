@@ -2,7 +2,7 @@
 import type { FormSubmitEvent } from "@nuxt/ui/dist/runtime/types";
 import { AxiosError } from "axios";
 import { z } from "zod";
-import { getProfile, updateAccount } from "~/service/account";
+import { updateAccount } from "~/service/account";
 import { getFile, uploadFile } from "~/service/file";
 import { useProfileStore } from "~/store/profileStore";
 import type { AccountResponse, UpdateAccountRequest } from "~/types";

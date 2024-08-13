@@ -92,15 +92,15 @@ onBeforeMount(() => {
 
 <template>
   <div
-    class="fixed w-full top-0 p-3 bg-transparent items-center max-h-10 flex flex-row justify-between bg-opacity-60 border-b-2"
+    class="fixed w-full top-0 p-3 bg-transparent items-center max-h-12 flex flex-row justify-between bg-opacity-60 border-b-2"
   >
     <div class="flex flex-row gap-4">
       <ULink
-        class="flex items-center gap-2"
+        class="flex items-center gap-1 hover:bg-gray-100 p-1 rounded-lg dark:hover:bg-gray-600"
         v-for="item in links"
         :key="item.label"
         :to="{ name: item.to }"
-        active-class="text-primary"
+        active-class="text-primary  "
         inactive-class="text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-200"
       >
         <UIcon :name="item.icon" />
@@ -152,7 +152,24 @@ onBeforeMount(() => {
       <UDropdown :items="items" :popper="{ placement: 'bottom-start' }">
         <UIcon name="i-heroicons-user" />
         <template #profile="{ item }">
-          <div class="flex justify-center gap-2 items-center">
+          <div
+            class="flex justify-center gap-2 items-center"
+            v-motion
+            :initial="{
+              y: 100,
+              opacity: 0,
+            }"
+            :enter="{
+              y: 0,
+              opacity: 1,
+              transition: {
+                type: 'spring',
+                stiffness: 250,
+                damping: 25,
+                mass: 0.5,
+              },
+            }"
+          >
             <UAvatar :src="avatarUrl" size="xs" alt="avatar" />
             {{ item.label }}
           </div>

@@ -9,6 +9,21 @@ onMounted(() => {
     }
   }, 2000);
 });
+const initial = {
+  y: 500,
+  opacity: 0,
+  transition: {
+    stiffness: 250,
+  },
+};
+const enter = {
+  y: 0,
+  opacity: 1,
+  transition: {
+    type: "spring",
+    ease: "easeInOut",
+  },
+};
 </script>
 
 <template>
@@ -20,7 +35,11 @@ onMounted(() => {
       aria-label="loading"
     ></div>
     <span
-      class="animate-bounce text-pretty text-2xl text-green-600 dark:text-white"
+      v-motion
+      :initial="initial"
+      :enter="enter"
+      :delay="200"
+      class="text-pretty text-2xl text-green-600 dark:text-white"
       v-if="hideSpinner"
       >Loading...</span
     >

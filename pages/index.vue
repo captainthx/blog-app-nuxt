@@ -49,9 +49,13 @@ onMounted(() => {
 
 <template>
   <ASpinner v-if="isLoading" />
-  <div v-else class="flex flex-col gap-5">
-    <p class="text-pretty font-semibold text-2xl">All Post</p>
+  <div class="flex flex-col gap-5">
+    <p class="text-pretty font-semibold text-2xl" v-if="postList">All Post</p>
     <div
+      v-motion
+      :initail="initial"
+      :enter="enter"
+      :delay="200"
       v-if="postList?.length"
       class="w-full grid gap-4"
       v-for="post in postList"
@@ -59,7 +63,6 @@ onMounted(() => {
     >
       <ABlog :blog="post" />
     </div>
-    <div v-else class="text-center">No posts available.</div>
     <div class="flex justify-end mb-10 pr-5">
       <UPagination
         v-model="pagination.currentPage"

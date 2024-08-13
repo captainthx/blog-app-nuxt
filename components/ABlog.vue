@@ -38,8 +38,9 @@ onBeforeMount(() => {
 
 <template>
   <div
-    class="overflow-hidden rounded-lg mt-5 bg-white dark:bg-transparent hover:shadow-lg"
+    class="overflow-hidden rounded-lg mt-5 cursor-pointer shadow-xl bg-white transition ease-in-out dark:bg-transparent dark:hover:bg-gray-800 hover:scale-105 hover:bg-gray-100 duration-200"
     v-if="blog"
+    @click="$router.push(`/blog/${blog.id}`)"
   >
     <div class="flex justify-center">
       <NuxtImg
@@ -66,28 +67,39 @@ onBeforeMount(() => {
         v-html="blog.content"
         class="mt-1 text-gray-500 truncate dark:text-gray-300"
       ></p>
-      <div class="flex justify-end mt-4">
-        <ULink
+      <div class="flex justify-end mt-5">
+        <!-- <ULink
           :to="`/blog/${blog.id}`"
           active-class="text-primary"
           inactive-class="text-blue-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-blue-500"
           >read more</ULink
-        >
+        > -->
       </div>
       <!-- tag-->
       <ClientOnly>
-        <div class="mt-4 flex gap-2">
-          <span
-            v-for="tag in blog.tags"
-            :key="tag"
-            :class="`inline-flex items-center gap-1 rounded-full bg-${randomColor()}-100 px-2 py-1 text-base font-semibold text-${randomColor()}-600`"
-            >{{ tag }}</span
+        <div
+          class="flex flex-row items-center align-middle justify-between gap-2 mt-4"
+        >
+          <div>
+            <span
+              v-for="tag in blog.tags"
+              :key="tag"
+              :class="`inline-flex items-center   px-2 py-1 text-base font-semibold text-${randomColor()}-600`"
+              >{{ tag }}</span
+            >
+          </div>
+          <UButton
+            class="text-red-500 hover:bg-inherit"
+            icon="i-heroicons-heart-solid"
+            variant="ghost"
+            color="white"
           >
+            {{ blog.likeCount }}
+          </UButton>
         </div>
       </ClientOnly>
     </div>
   </div>
   <div v-else class="text-center">Not Found!</div>
 </template>
-
 <style scoped></style>
