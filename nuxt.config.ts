@@ -33,6 +33,7 @@ export default defineNuxtConfig({
     ],
     "dayjs-nuxt",
     "nuxt-tiptap-editor",
+    "@vueuse/motion/nuxt",
   ],
   dayjs: {
     locales: ["en", "th"],
