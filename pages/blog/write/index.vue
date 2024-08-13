@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { z } from "zod";
-import { getFile, uploadFile } from "~/service/file";
+import { uploadFile } from "~/service/file";
 import { createPost } from "~/service/post";
 import { showToastError, showToastSuccess } from "~/utils/notification";
 import { handleAxiosError, handleZodError } from "~/utils/handleError";
@@ -51,8 +51,14 @@ const handleAddTag = () => {
     showToastError("Tag is empty", "Please enter a tag");
     return;
   }
-  if (body.tags.length === 6) {
+  if (tag.value.length > 20) {
+    showToastError("Tag is too long", "Tag must be less than 20 characters");
+    tag.value = "";
+    return;
+  }
+  if (body.tags.length === 4) {
     showToastError("Tag limit reached", "You can only add up to 6 tags");
+    tag.value = "";
     return;
   }
   body.tags.push(tag.value);
@@ -119,20 +125,28 @@ const handleUploadFile = async () => {
     }
   }
 };
-
 const handleCancel = () => {
   previewImage.value = "";
   imageFile.value = null;
 };
+
+const maxTagDisplay = 10; // Maximum characters to display before truncating
+
+const truncateTag = (tag: string) => {
+  if (tag.length <= maxTagDisplay) return tag;
+  return `${tag.slice(0, maxTagDisplay)}...`;
+};
 </script>
 
 <template>
-  <div class="w-full mx-auto h-[80dvh] mt-">
+  <div class="w-full mx-auto h-[80dvh]">
     <div class="flex flex-col justify-center items-center">
-      <p class="text-center font-semibold text-2xl text-pretty">Create post</p>
+      <p class="text-center font-semibold text-2xl text-pretty mt-5">
+        Create post
+      </p>
       <NuxtImg
         @click="inputRef?.click()"
-        class="p-2 size-40"
+        class="p-2 size-40 rounded-full"
         :src="previewImage ? previewImage : defaultImage"
       />
       <input
@@ -152,48 +166,61 @@ const handleCancel = () => {
         />
       </div>
       <div class="flex flex-col w-full justify-center items-center mt-2">
-        <div class="flex flex-row w-full justify-center gap-2">
-          <UInput
-            class="w-2/5"
-            v-model="tag"
-            type="text"
-            placeholder="tag"
-            :ui="{ icon: { trailing: { pointer: '' } } }"
-            :autofocus="true"
-          >
-            <template #trailing>
+        <div class="flex flex-row gap-2">
+          <div class="flex flex-wrap gap-2 w-full">
+            <div
+              v-motion
+              :initial="{ opacity: 0, y: 100 }"
+              :enter="{
+                opacity: 1,
+                y: 0,
+                scale: 1,
+              }"
+              :delay="200"
+              v-for="tag in body.tags"
+              :key="tag"
+              variant="soft"
+              class="flex flex-wrap items-center bg-primary bg-opacity-25 rounded-md text-center truncate dark:bg-opacity-50"
+            >
+              <span :title="tag" class="mr-1">{{ truncateTag(tag) }}</span>
               <UButton
                 color="gray"
-                variant="link"
-                icon="i-heroicons-plus-small-solid"
-                :padded="false"
-                @click="handleAddTag()"
+                variant="ghost"
+                icon="i-heroicons-x-mark"
+                size="xs"
+                class="ml-1"
+                @click="removeTag(tag)"
               />
-            </template>
-          </UInput>
-          <USelect
+            </div>
+            <UInput
+              v-if="body.tags.length < 4"
+              v-model="tag"
+              type="text"
+              placeholder="Add a tag..."
+              :ui="{ icon: { trailing: { pointer: '' } } }"
+              :autofocus="true"
+              @keydown.enter.prevent="handleAddTag()"
+              class="flex-grow min-w-[150px]"
+            >
+              <template #trailing>
+                <UButton
+                  color="gray"
+                  variant="link"
+                  icon="i-heroicons-plus-small-solid"
+                  :padded="false"
+                  @click="handleAddTag()"
+                />
+              </template>
+            </UInput>
+          </div>
+          <!-- <USelect
             class=""
             v-model="body.status"
             :options="postStatus"
             option-attribute="type"
-          />
-        </div>
-        <div class="flex space-x-2">
-          <div
-            class="relative text-center w-20 h-8 p-1 mt-1 truncate rounded-md border-2 border-stone-100"
-            v-for="tag in body.tags"
-            :key="tag"
-          >
-            {{ tag }}
-            <span
-              class="cursor-pointer absolute -top-2 right-0"
-              @click="removeTag(tag)"
-              >x</span
-            >
-          </div>
+          /> -->
         </div>
       </div>
-
       <div class="flex flex-col mt-2">
         <ATiptapEditor
           :value="body.content"
