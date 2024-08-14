@@ -20,7 +20,7 @@ const query = ref<string>("");
 
 <template>
   <div
-    class="fixed w-full top-0 p-3 items-center h-10 flex flex-row justify-between bg-white/30 bg-opacity-60 border-b-2"
+    class="fixed w-full top-0 p-3 h-10 flex flex-row items-center justify-between bg-white/30 bg-opacity-60 border-b-2"
   >
     <div class="flex flex-row gap-4">
       <ULink

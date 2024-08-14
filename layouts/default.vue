@@ -3,7 +3,7 @@
 <template>
   <ALoadingBar :duration="10000" />
   <ANavbar />
-  <UContainer class="w-screen max-h-[100dvh] mt-12 p-4">
+  <UContainer class="w-full max-h-[100dvh] mt-20 p-4">
     <UNotifications />
     <NuxtPage />
   </UContainer>

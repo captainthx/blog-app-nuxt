@@ -38,7 +38,7 @@ onBeforeMount(() => {
 
 <template>
   <div
-    class="overflow-hidden rounded-lg mt-5 cursor-pointer shadow-xl bg-white transition ease-in-out dark:bg-transparent dark:hover:bg-gray-800 hover:scale-105 hover:bg-gray-100 duration-200"
+    class="overflow-hidden rounded-lg mt-5 cursor-pointer shadow-xl scale-90 bg-white transition ease-in-out dark:bg-transparent dark:hover:bg-gray-800 hover:scale-100 hover:bg-gray-100 duration-200"
     v-if="blog"
     @click="$router.push(`/blog/${blog.id}`)"
   >

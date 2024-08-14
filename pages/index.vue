@@ -52,10 +52,6 @@ onMounted(() => {
   <div class="flex flex-col gap-5">
     <p class="text-pretty font-semibold text-2xl" v-if="postList">All Post</p>
     <div
-      v-motion
-      :initail="initial"
-      :enter="enter"
-      :delay="200"
       v-if="postList?.length"
       class="w-full grid gap-4"
       v-for="post in postList"

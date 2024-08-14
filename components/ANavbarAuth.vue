@@ -64,8 +64,6 @@ const items = [
     },
   ],
 ];
-const isOpenModal = ref<boolean>(false);
-const query = ref<string>("");
 const colorMode = useColorMode();
 const isDark = computed({
   get() {
@@ -92,9 +90,9 @@ onBeforeMount(() => {
 
 <template>
   <div
-    class="fixed w-full top-0 p-3 bg-transparent items-center max-h-12 flex flex-row justify-between bg-opacity-60 border-b-2"
+    class="fixed w-full top-0 p-3 bg-transparent z-40 items-center max-h-12 flex flex-row justify-between bg-opacity-60 border-b-2"
   >
-    <div class="flex flex-row gap-4">
+    <div class="flex flex-row gap-2">
       <ULink
         class="flex items-center gap-1 hover:bg-gray-100 p-1 rounded-lg dark:hover:bg-gray-600"
         v-for="item in links"
@@ -106,33 +104,6 @@ onBeforeMount(() => {
         <UIcon :name="item.icon" />
         {{ item.label }}
       </ULink>
-    </div>
-    <div class="flex flex-col items-center">
-      <!-- <UIcon
-        class="cursor-pointer"
-        name="i-heroicons-magnifying-glass-20-solid"
-        @click="isOpenModal = !isOpenModal"
-      > -->
-      <!-- </UIcon> -->
-      <UModal v-model="isOpenModal">
-        <UCard
-          :ui="{
-            ring: '',
-            divide: 'divide-y divide-gray-100 dark:divide-gray-800',
-          }"
-        >
-          <template #header>
-            <div class="flex flex-row gap-5">
-              <UInput
-                class="w-full mx-auto"
-                type="text"
-                placeholder="Search..."
-              />
-            </div>
-          </template>
-          content
-        </UCard>
-      </UModal>
     </div>
     <div class="flex flex-row gap-2 mr-5 items-center">
       <div>
