@@ -4,6 +4,7 @@ import { ZodError, type AnyZodObject } from "zod";
 export const handleZodError = (error: unknown) => {
   const zodError = error as ZodError<AnyZodObject>;
   zodError.issues.forEach((issue) => {
+    console.log(issue.message);
     showToastError("Validation Error", issue.message);
   });
 };

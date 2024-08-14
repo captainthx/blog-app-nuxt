@@ -1,5 +1,4 @@
 import type { FormError } from "@nuxt/ui/dist/runtime/types";
-import { ZodError, type AnyZodObject, type z } from "zod";
 
 const regex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
 export const validateEmail = (email: string): boolean => {
@@ -25,7 +24,7 @@ export const validateRegisterForm = (body: any): FormError[] => {
   if (!body.mobile)
     errors.push({
       path: "mobile",
-      message: "Please input mobile min 10 digits",
+      message: "Please input mobile ",
     });
   return errors;
 };
