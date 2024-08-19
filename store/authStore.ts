@@ -26,7 +26,6 @@ export const useAuthStore = defineStore("auth", () => {
       if (payload.value) {
         const timeout = (payload.value.exp - Date.now() / 1000) * 1000;
         if (timeout < 0) {
-          console.log("Token expired");
           if ((token.value.refreshExpire - Date.now() / 1000) * 1000 > 0) {
             console.log("Refresh token not expired");
             await refreshAuth(token.value.refreshToken);
