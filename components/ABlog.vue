@@ -44,7 +44,7 @@ onBeforeMount(() => {
   >
     <div class="flex justify-center">
       <NuxtImg
-        class="w-[500px] h-[281px] aspect-video mt-2 p-2"
+        class="w-[500px] h-[281px] mt-2 p-2"
         :src="postImage ? postImage : defaultImage"
         alt="alt"
       />

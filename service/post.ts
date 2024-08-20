@@ -1,12 +1,15 @@
 import type {
   CreatePostRequest,
+  Pagination,
   PostRequest,
   PostResponse,
+  SearchPostRequest,
+  SearchPostResponse,
   ServerResponse,
 } from "~/types";
 import client from "./request";
 
-const getpostList = (params: PostRequest): ServerResponse<PostResponse[]> =>
+const getPostList = (params: Pagination): ServerResponse<PostResponse[]> =>
   client.get("/v1/post", { params });
 
 const getPostByid = (id: number): ServerResponse<PostResponse> =>
@@ -18,4 +21,9 @@ const likePost = (postId: number): ServerResponse<void> =>
 const createPost = (body: CreatePostRequest): ServerResponse<void> =>
   client.post("/v1/post", body);
 
-export { getpostList, getPostByid, likePost, createPost };
+const searchPost = (
+  params: SearchPostRequest
+): ServerResponse<SearchPostResponse[]> =>
+  client.get("/v1/post/search", { params });
+
+export { getPostList, getPostByid, likePost, createPost, searchPost };

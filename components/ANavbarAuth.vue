@@ -64,15 +64,6 @@ const items = [
     },
   ],
 ];
-const colorMode = useColorMode();
-const isDark = computed({
-  get() {
-    return colorMode.value === "dark";
-  },
-  set() {
-    colorMode.preference = colorMode.value === "dark" ? "light" : "dark";
-  },
-});
 
 const loadAvatar = async () => {
   if (profile) {
@@ -106,20 +97,6 @@ onBeforeMount(() => {
       </ULink>
     </div>
     <div class="flex flex-row gap-2 mr-5 items-center">
-      <div>
-        <ClientOnly>
-          <UButton
-            class="hover:bg-opacity-0 dark:hover:bg-opacity-0"
-            :icon="
-              isDark ? 'i-heroicons-moon-20-solid' : 'i-heroicons-sun-20-solid'
-            "
-            color="gray"
-            variant="ghost"
-            aria-label="Theme"
-            @click="isDark = !isDark"
-          />
-        </ClientOnly>
-      </div>
       <UDropdown :items="items" :popper="{ placement: 'bottom-start' }">
         <UIcon name="i-heroicons-user" />
         <template #profile="{ item }">
@@ -147,5 +124,6 @@ onBeforeMount(() => {
         </template>
       </UDropdown>
     </div>
+    <AFloatButton />
   </div>
 </template>

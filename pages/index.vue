@@ -2,7 +2,7 @@ div
 <script setup lang="ts">
 import { AxiosError } from "axios";
 import ASpinner from "~/components/ASpinner.vue";
-import { getpostList } from "~/service/post";
+import { getPostList } from "~/service/post";
 import type { PostResponse, PostRequest } from "~/types";
 import { DefaultPagination } from "~/types/enum";
 
@@ -21,7 +21,7 @@ const postList = ref<PostResponse[] | null>(null);
 const loadData = async () => {
   isLoading.value = true;
   try {
-    const res = await getpostList(queryPost.value);
+    const res = await getPostList(queryPost.value);
     if (res.status === 200 && res.data.result) {
       postList.value = res.data.result;
       pagination.pageCount = res.data.pagination.pages;
@@ -30,7 +30,6 @@ const loadData = async () => {
   } catch (error) {
     isLoading.value = false;
     if (error instanceof AxiosError) {
-      console.log("error get post", error);
       handleAxiosError("Load post failed", error);
     }
   } finally {
@@ -51,6 +50,7 @@ onMounted(() => {
   <ASpinner v-if="isLoading" />
   <div class="flex flex-col gap-5">
     <p class="text-pretty font-semibold text-2xl" v-if="postList">All Post</p>
+
     <div
       v-if="postList?.length"
       class="w-full grid gap-4"

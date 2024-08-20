@@ -37,9 +37,7 @@ const loadData = async () => {
       blog.value = res.data.result;
     }
   } catch (error) {
-    if (typeof error === "string") {
-      console.log(error);
-    } else if (error instanceof AxiosError) {
+    if (error instanceof AxiosError) {
       const axiosError = error as AxiosError;
       const responseData = axiosError.response?.data as { message: string };
       console.log("error ", responseData.message);
@@ -67,7 +65,6 @@ const isFavorite = computed(() => {
     const favoriteAccountId = fav.id;
     return favoriteAccountId === authStore.payload?.auth;
   });
-
   return result;
 });
 
@@ -75,27 +72,13 @@ const handlelike = async () => {
   try {
     const res = await likePost(Number(postId));
     if (res.status === 200 && res.data.code === 200) {
-      console.log("response ", res.data);
-      toast.add({
-        title: "You liked this post",
-        description: res.data.message,
-        color: "green",
-        timeout: 3000,
-      });
+      showToastSuccess("You liked this post", res.data.message);
+
       await loadData();
     }
   } catch (error) {
-    if (typeof error === "string") {
-      console.log("error like post ", error);
-    } else if (error instanceof AxiosError) {
-      const axiosError = error as AxiosError;
-      const responseData = axiosError.response?.data as { message: string };
-      toast.add({
-        title: "like post failed",
-        description: responseData.message,
-        color: "red",
-        timeout: 3000,
-      });
+    if (error instanceof AxiosError) {
+      handleAxiosError("like post failed", error);
     }
   }
 };
@@ -104,24 +87,12 @@ const handleFavoritePost = async () => {
   try {
     const res = await faveritePost({ postId: Number(postId) });
     if (res.status === 200 && res.data.code === 200) {
-      toast.add({
-        title: "You favorite this post",
-        description: res.data.message,
-        color: "green",
-        timeout: 3000,
-      });
+      showToastSuccess("You favorite this post", res.data.message);
       await loadData();
     }
   } catch (error) {
     if (error instanceof AxiosError) {
-      const axiosError = error as AxiosError;
-      const responseData = axiosError.response?.data as { message: string };
-      toast.add({
-        title: "",
-        description: responseData.message,
-        color: "red",
-        timeout: 3000,
-      });
+      handleAxiosError("favorite post failed", error);
     }
   }
 };

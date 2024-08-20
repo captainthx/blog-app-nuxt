@@ -139,101 +139,103 @@ const truncateTag = (tag: string) => {
 </script>
 
 <template>
-  <div class="w-full mx-auto h-[80dvh]">
-    <div class="flex flex-col justify-center items-center">
-      <p class="text-center font-semibold text-2xl text-pretty mt-5">
-        Create post
-      </p>
-      <NuxtImg
-        @click="inputRef?.click()"
-        class="p-2 size-40 rounded-full"
-        :src="previewImage ? previewImage : defaultImage"
-      />
-      <input
-        hidden
-        ref="inputRef"
-        accept="image/*"
-        type="file"
-        @change="changeFile"
-      />
-      <div class="w-full flex flex-row justify-center items-center">
-        <UInput
-          class="w-2/4"
-          type="text"
-          v-model="body.title"
-          placeholder="title"
-          :autofocus="true"
+  <MotionGroup preset="popVisibleOnce" :duration="600">
+    <div class="w-full mx-auto h-[80dvh]">
+      <div class="flex flex-col justify-center items-center">
+        <p class="text-center font-semibold text-2xl text-pretty mt-5">
+          Create post
+        </p>
+        <NuxtImg
+          @click="inputRef?.click()"
+          class="p-2 size-40 rounded-full"
+          :src="previewImage ? previewImage : defaultImage"
         />
-      </div>
-      <div class="flex flex-col w-full justify-center items-center mt-2">
-        <div class="flex flex-row gap-2">
-          <div class="flex flex-wrap gap-2 w-full">
-            <div
-              v-motion
-              :initial="{ opacity: 0, y: 100 }"
-              :enter="{
-                opacity: 1,
-                y: 0,
-                scale: 1,
-              }"
-              :delay="200"
-              v-for="tag in body.tags"
-              :key="tag"
-              variant="soft"
-              class="flex flex-wrap items-center bg-primary bg-opacity-25 rounded-md text-center truncate dark:bg-opacity-50"
-            >
-              <span :title="tag" class="mr-1">{{ truncateTag(tag) }}</span>
-              <UButton
-                color="gray"
-                variant="ghost"
-                icon="i-heroicons-x-mark"
-                size="xs"
-                class="ml-1"
-                @click="removeTag(tag)"
-              />
-            </div>
-            <UInput
-              v-if="body.tags.length < 4"
-              v-model="tag"
-              type="text"
-              placeholder="Add a tag..."
-              :ui="{ icon: { trailing: { pointer: '' } } }"
-              :autofocus="true"
-              @keydown.enter.prevent="handleAddTag()"
-              class="flex-grow min-w-[150px]"
-            >
-              <template #trailing>
+        <input
+          hidden
+          ref="inputRef"
+          accept="image/*"
+          type="file"
+          @change="changeFile"
+        />
+        <div class="w-full flex flex-row justify-center items-center">
+          <UInput
+            class="w-2/4"
+            type="text"
+            v-model="body.title"
+            placeholder="title"
+            :autofocus="true"
+          />
+        </div>
+        <div class="flex flex-col w-full justify-center items-center mt-2">
+          <div class="flex flex-row gap-2">
+            <div class="flex flex-wrap gap-2 w-full">
+              <div
+                v-motion
+                :initial="{ opacity: 0, y: 100 }"
+                :enter="{
+                  opacity: 1,
+                  y: 0,
+                  scale: 1,
+                }"
+                :delay="200"
+                v-for="tag in body.tags"
+                :key="tag"
+                variant="soft"
+                class="flex flex-wrap items-center bg-primary bg-opacity-25 rounded-md text-center truncate dark:bg-opacity-50"
+              >
+                <span :title="tag" class="mr-1">{{ truncateTag(tag) }}</span>
                 <UButton
                   color="gray"
-                  variant="link"
-                  icon="i-heroicons-plus-small-solid"
-                  :padded="false"
-                  @click="handleAddTag()"
+                  variant="ghost"
+                  icon="i-heroicons-x-mark"
+                  size="xs"
+                  class="ml-1"
+                  @click="removeTag(tag)"
                 />
-              </template>
-            </UInput>
-          </div>
-          <!-- <USelect
+              </div>
+              <UInput
+                v-if="body.tags.length < 4"
+                v-model="tag"
+                type="text"
+                placeholder="Add a tag..."
+                :ui="{ icon: { trailing: { pointer: '' } } }"
+                :autofocus="true"
+                @keydown.enter.prevent="handleAddTag()"
+                class="flex-grow min-w-[150px]"
+              >
+                <template #trailing>
+                  <UButton
+                    color="gray"
+                    variant="link"
+                    icon="i-heroicons-plus-small-solid"
+                    :padded="false"
+                    @click="handleAddTag()"
+                  />
+                </template>
+              </UInput>
+            </div>
+            <!-- <USelect
             class=""
             v-model="body.status"
             :options="postStatus"
             option-attribute="type"
           /> -->
+          </div>
         </div>
-      </div>
-      <div class="flex flex-col mt-2">
-        <ATiptapEditor
-          :value="body.content"
-          :mode="'editor'"
-          @update:value="handleUpdateContent"
-        />
-        <div class="flex justify-end mb-2 mt-2 gap-2">
-          <UButton variant="ghost" @click="handleCancel">cancel</UButton>
-          <UButton variant="ghost" @click="handleCreatePost">write</UButton>
+        <div class="flex flex-col mt-2">
+          <ATiptapEditor
+            :value="body.content"
+            :mode="'editor'"
+            @update:value="handleUpdateContent"
+          />
+          <div class="flex justify-end mb-2 mt-2 gap-2">
+            <UButton variant="ghost" @click="handleCancel">cancel</UButton>
+            <UButton variant="ghost" @click="handleCreatePost">write</UButton>
+          </div>
         </div>
       </div>
     </div>
-  </div>
+  </MotionGroup>
 </template>
 
 <style scoped></style>

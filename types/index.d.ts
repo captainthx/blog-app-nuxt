@@ -143,4 +143,14 @@ export interface PostFavoriteResponse {
   id: number;
   title: string;
   content: string;
+  postImage: string;
+}
+
+export interface SearchPostRequest {
+  search: string;
+}
+export interface SearchPostResponse {
+  id: number;
+  cdt: Date;
+  title: string;
 }
