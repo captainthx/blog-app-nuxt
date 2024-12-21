@@ -45,11 +45,22 @@ const handelSelectSearch = (id: number) => {
   router.push({ path: `/blog/${id}` });
 };
 
+const searchTimeout = ref<NodeJS.Timeout | null>(null);
 watch(search, () => {
-  if (search.value != "") {
-    loadSearch();
+  if (searchTimeout.value) {
+    clearTimeout(searchTimeout.value);
   }
-  searchList.value = [];
+
+  if (search.value === "") {
+    searchList.value = [];
+    return;
+  }
+
+  isLoading.value = true;
+
+  searchTimeout.value = setTimeout(async () => {
+    await loadSearch();
+  }, 1500);
 });
 </script>
 
@@ -188,12 +199,12 @@ watch(search, () => {
               </div>
             </div>
           </div>
-          <div
+          <!-- <div
             v-if="searchList.length === 0 && search.length > 0"
             class="flex justify-center mt-5"
           >
             No data found!
-          </div>
+          </div> -->
           <div v-if="search === ''" class="flex justify-center mt-5">
             Search something...
           </div>
