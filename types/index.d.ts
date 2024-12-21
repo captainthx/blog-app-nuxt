@@ -64,8 +64,8 @@ export interface PostResponse {
   comments: CommentResponse[];
   tags: string[];
   author: AccountResponse;
-  postLikes: AccountResponse[];
-  favoritesPosts: AccountResponse[];
+  like: boolean;
+  favorite: boolean;
 }
 
 export interface AccountResponse {

@@ -8,21 +8,19 @@ import { useProfileStore } from "~/store/profileStore";
 import type { PostResponse } from "~/types";
 
 useHead({
-  title: "Blog",
+  title: "post",
   meta: [
     {
       name: "description",
-      content: "Blog detail page",
+      content: "post detail page",
     },
   ],
 });
 
 const route = useRoute();
-const authStore = useAuthStore();
 const { profile } = useProfileStore();
 const postId = route.params.id;
-const blog = ref<PostResponse | null>(null);
-const toast = useToast();
+const post = ref<PostResponse | null>(null);
 const isComment = ref<boolean>(false);
 const avatarImage = ref<string>("");
 
@@ -34,7 +32,7 @@ const loadData = async () => {
   try {
     const res = await getPostByid(Number(postId));
     if (res.status === 200 && res.data.result) {
-      blog.value = res.data.result;
+      post.value = res.data.result;
     }
   } catch (error) {
     if (error instanceof AxiosError) {
@@ -44,29 +42,6 @@ const loadData = async () => {
     }
   }
 };
-
-const isLiked = computed(() => {
-  if (!blog.value || !blog.value.postLikes || !authStore.payload) {
-    return false;
-  }
-  const result = blog.value.postLikes.some((like) => {
-    const likeAccountId = like.id;
-    return likeAccountId === authStore.payload?.auth;
-  });
-
-  return result;
-});
-
-const isFavorite = computed(() => {
-  if (!blog.value || !blog.value.favoritesPosts || !authStore.payload) {
-    return false;
-  }
-  const result = blog.value.favoritesPosts.some((fav) => {
-    const favoriteAccountId = fav.id;
-    return favoriteAccountId === authStore.payload?.auth;
-  });
-  return result;
-});
 
 const handlelike = async () => {
   try {
@@ -110,15 +85,15 @@ const getAvatarImage = async () => {
 
 onMounted(async () => {
   await loadData();
-  if (blog.value && blog.value.author) {
+  if (post.value && post.value.author) {
     await getAvatarImage();
   }
 });
 </script>
 
 <template>
-  <div class="flex flex-col gap-4 w-full" v-if="blog">
-    <h1 class="text-3xl font-semibold text-center">{{ blog.title }}</h1>
+  <div class="flex flex-col gap-4 w-full" v-if="post">
+    <h1 class="text-3xl font-semibold text-center">{{ post.title }}</h1>
     <div class="flex flex-rows justify-between items-center align-middle p-2">
       <div class="flex flex-col">
         <div class="flex justify-start gap-5 items-center align-middle">
@@ -129,21 +104,21 @@ onMounted(async () => {
                 : 'https://avatars.githubusercontent.com/u/739984?v=4'
             "
           />
-          <div>{{ blog.author ? blog.author.name : "Init post" }}</div>
+          <div>{{ post.author ? post.author.name : "Init post" }}</div>
         </div>
         <div class="mt-2 p-1">
-          <p>{{ formatDate(blog.cdt) }}</p>
+          <p>{{ formatDate(post.cdt) }}</p>
         </div>
       </div>
       <div>
         <UButton
-          :disabled="isLiked"
+          :disabled="post.like"
           color="white"
           class="text-red-500"
           variant="ghost"
-          :icon="isLiked ? 'i-heroicons-heart-solid' : 'i-heroicons-heart'"
+          :icon="post.like ? 'i-heroicons-heart-solid' : 'i-heroicons-heart'"
           @click="handlelike"
-          >{{ blog.likeCount }}</UButton
+          >{{ post.likeCount }}</UButton
         >
 
         <UButton
@@ -154,12 +129,12 @@ onMounted(async () => {
         />
 
         <UButton
-          :disabled="isFavorite"
+          :disabled="post.favorite"
           color="white"
           variant="ghost"
           class="text-yellow-500"
           :icon="
-            isFavorite
+            post.favorite
               ? 'i-heroicons-bookmark-20-solid'
               : 'i-heroicons-bookmark'
           "
@@ -169,12 +144,12 @@ onMounted(async () => {
     </div>
     <div>
       <UCard class="h-[50dvh] overflow-auto text-pretty">
-        <div v-html="blog.content"></div>
+        <div v-html="post.content"></div>
       </UCard>
     </div>
     <ClientOnly>
       <USlideover v-model="isComment">
-        <AComment :post-id="blog.id" :open-comment="isComment" />
+        <AComment :post-id="post.id" :open-comment="isComment" />
       </USlideover>
     </ClientOnly>
   </div>
